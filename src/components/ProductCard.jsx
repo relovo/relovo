@@ -2,11 +2,8 @@ function ProductCard({ product, storeName, addToCart }) {
 
 
   const image =
-
     product.image ||
-
     product.image_url ||
-
     "";
 
 
@@ -40,25 +37,21 @@ function ProductCard({ product, storeName, addToCart }) {
 
 
 
-
   return (
-
 
     <div
 
-      style={{
-
-        border: "1px solid #ddd",
-
-        borderRadius: "12px",
-
-        padding: "15px",
-
-        width: "220px",
-
-        background: "white"
-
-      }}
+      className="
+        bg-white
+        rounded-2xl
+        shadow-sm
+        hover:shadow-xl
+        transition
+        duration-300
+        overflow-hidden
+        border
+        border-gray-100
+      "
 
     >
 
@@ -66,132 +59,176 @@ function ProductCard({ product, storeName, addToCart }) {
 
 
 
+      {/* IMAGE */}
 
-      {
-
-        image ? (
-
-
-          <img
-
-            src={image}
-
-            alt={product.name}
-
-            style={{
-
-              width:"100%",
-
-              height:"150px",
-
-              objectFit:"cover",
-
-              borderRadius:"10px"
-
-            }}
-
-          />
+      <div className="
+        h-48
+        bg-gray-100
+        overflow-hidden
+      ">
 
 
-        )
-
-        :
-
-
-        (
+        {
+          image ? (
 
 
-          <div
+            <img
 
-            style={{
+              src={image}
 
-              height:"150px",
+              alt={product.name}
 
-              display:"flex",
+              className="
+                w-full
+                h-full
+                object-cover
+                hover:scale-105
+                transition
+                duration-300
+              "
 
-              alignItems:"center",
+            />
 
-              justifyContent:"center",
 
-              background:"#f5f5f5"
+          )
 
-            }}
+
+          :
+
+
+          (
+
+            <div
+
+              className="
+                h-full
+                flex
+                items-center
+                justify-center
+                text-gray-400
+              "
+
+            >
+
+              No image
+
+            </div>
+
+          )
+
+        }
+
+
+      </div>
+
+
+
+
+
+
+
+      {/* CONTENT */}
+
+
+      <div className="
+        p-5
+      ">
+
+
+
+
+
+        <h3 className="
+          font-bold
+          text-lg
+          text-gray-800
+          truncate
+        ">
+
+          {product.name}
+
+        </h3>
+
+
+
+
+
+
+        <p className="
+          text-sm
+          text-gray-500
+          mt-2
+        ">
+
+          🏪 {storeName}
+
+        </p>
+
+
+
+
+
+
+
+        <div className="
+          flex
+          justify-between
+          items-center
+          mt-4
+        ">
+
+
+
+          <span className="
+            text-xl
+            font-bold
+            text-orange-500
+          ">
+
+
+            £{Number(product.price).toFixed(2)}
+
+
+          </span>
+
+
+
+
+
+
+          <button
+
+            onClick={handleAddToCart}
+
+            className="
+              bg-orange-500
+              text-white
+              px-4
+              py-2
+              rounded-full
+              font-semibold
+              hover:bg-orange-600
+              transition
+            "
 
           >
 
-            No image
-
-          </div>
+            Add 🛒
 
 
-        )
-
-      }
+          </button>
 
 
 
+
+        </div>
 
 
 
 
 
+      </div>
 
-      <h3>
-
-        {product.name}
-
-      </h3>
-
-
-
-
-
-
-
-      <p>
-
-        🏪 {storeName}
-
-      </p>
-
-
-
-
-
-
-
-      <h3>
-
-        £{Number(product.price).toFixed(2)}
-
-      </h3>
-
-
-
-
-
-
-
-
-      <button
-
-        onClick={handleAddToCart}
-
-        style={{
-
-          padding:"10px",
-
-          width:"100%",
-
-          cursor:"pointer"
-
-        }}
-
-      >
-
-        Add to cart 🛒
-
-      </button>
 
 
 
@@ -202,9 +239,7 @@ function ProductCard({ product, storeName, addToCart }) {
 
   );
 
-
 }
-
 
 
 export default ProductCard;
