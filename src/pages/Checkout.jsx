@@ -15,7 +15,6 @@ function Checkout({ cart }) {
 
 
 
-
   const total = cart.reduce(
 
     (sum, item) =>
@@ -25,7 +24,6 @@ function Checkout({ cart }) {
     0
 
   );
-
 
 
 
@@ -46,7 +44,6 @@ function Checkout({ cart }) {
 
 
 
-
     if (!slot) {
 
       alert("Please select delivery slot");
@@ -54,8 +51,6 @@ function Checkout({ cart }) {
       return;
 
     }
-
-
 
 
 
@@ -70,16 +65,12 @@ function Checkout({ cart }) {
 
 
 
-
-
     setLoading(true);
 
 
 
 
 
-
-    // CREATE ORDER
 
     const {
 
@@ -89,9 +80,7 @@ function Checkout({ cart }) {
 
     } = await supabase
 
-
       .from("orders")
-
 
       .insert([
 
@@ -109,12 +98,9 @@ function Checkout({ cart }) {
 
       ])
 
-
       .select()
 
-
       .single();
-
 
 
 
@@ -139,9 +125,6 @@ function Checkout({ cart }) {
 
 
 
-
-
-    // CREATE ITEMS
 
 
     const items = cart.map(item => ({
@@ -170,14 +153,6 @@ function Checkout({ cart }) {
 
 
 
-    console.log("ORDER ITEMS:", items);
-
-
-
-
-
-
-
 
     const {
 
@@ -185,12 +160,9 @@ function Checkout({ cart }) {
 
     } = await supabase
 
-
       .from("order_items")
 
-
       .insert(items);
-
 
 
 
@@ -216,13 +188,10 @@ function Checkout({ cart }) {
 
 
 
-
     alert("Order confirmed 🚚");
 
 
-
     setLoading(false);
-
 
 
   }
@@ -235,61 +204,88 @@ function Checkout({ cart }) {
 
 
 
-
   return (
 
 
-    <div
+    <div className="
+      min-h-screen
+      bg-gray-50
+      py-10
+      px-4
+    ">
 
-      style={{
 
-        padding:"25px"
+      <div className="
+        max-w-5xl
+        mx-auto
+        grid
+        md:grid-cols-2
+        gap-8
+      ">
 
-      }}
 
-    >
 
 
 
-      <h1>
 
-        🛒 Checkout
+        {/* DELIVERY */}
 
-      </h1>
 
+        <div className="
+          bg-white
+          rounded-2xl
+          shadow
+          p-6
+        ">
 
 
 
+          <h1 className="
+            text-3xl
+            font-bold
+            mb-6
+          ">
 
+            🚚 Checkout
 
+          </h1>
 
-      <h3>
 
-        Delivery Address
 
-      </h3>
 
 
+          <label className="
+            font-semibold
+          ">
 
+            Delivery Address
 
+          </label>
 
-      <input
 
-        value={address}
 
-        onChange={(e)=>setAddress(e.target.value)}
+          <textarea
 
-        placeholder="Enter your address"
+            value={address}
 
-        style={{
+            onChange={(e)=>setAddress(e.target.value)}
 
-          width:"100%",
+            placeholder="Enter your delivery address"
 
-          padding:"12px"
+            className="
+              w-full
+              mt-2
+              border
+              rounded-xl
+              p-3
+              h-32
+              outline-none
+              focus:ring-2
+              focus:ring-orange-400
+            "
 
-        }}
+          />
 
-      />
 
 
 
@@ -297,64 +293,72 @@ function Checkout({ cart }) {
 
 
 
+          <label className="
+            font-semibold
+            block
+            mt-6
+          ">
 
-      <h3>
+            Delivery Slot
 
-        Choose delivery slot
+          </label>
 
-      </h3>
 
 
 
 
+          <select
 
+            value={slot}
 
-      <select
+            onChange={(e)=>setSlot(e.target.value)}
 
-        value={slot}
+            className="
+              w-full
+              mt-2
+              border
+              rounded-xl
+              p-3
+            "
 
-        onChange={(e)=>setSlot(e.target.value)}
+          >
 
-        style={{
 
-          width:"100%",
+            <option value="">
 
-          padding:"12px"
+              Select time
 
-        }}
+            </option>
 
-      >
 
+            <option>
 
-        <option value="">
+              09:00 - 11:00
 
-          Select time
+            </option>
 
-        </option>
 
+            <option>
 
-        <option>
+              11:00 - 13:00
 
-          09:00 - 11:00
+            </option>
 
-        </option>
 
+            <option>
 
-        <option>
+              18:00 - 20:00
 
-          11:00 - 13:00
+            </option>
 
-        </option>
 
+          </select>
 
-        <option>
 
-          18:00 - 20:00
 
-        </option>
 
 
-      </select>
+        </div>
 
 
 
@@ -362,105 +366,187 @@ function Checkout({ cart }) {
 
 
 
-      <h2>
 
-        Your Order
 
-      </h2>
+        {/* ORDER SUMMARY */}
 
 
 
+        <div className="
+          bg-white
+          rounded-2xl
+          shadow
+          p-6
+          h-fit
+        ">
 
 
 
-      {
+          <h2 className="
+            text-2xl
+            font-bold
+            mb-5
+          ">
 
-        cart.map(item => (
+            🛒 Your Order
 
+          </h2>
 
-          <p key={item.id}>
 
 
-            {item.name}
 
-            {" x "}
 
-            {item.quantity}
 
-            {" - £"}
 
-            {(item.price * item.quantity).toFixed(2)}
+          {
+            cart.map(item => (
 
 
-          </p>
+              <div
 
+                key={item.id}
 
-        ))
+                className="
+                  flex
+                  justify-between
+                  border-b
+                  py-3
+                "
 
-      }
+              >
 
 
 
+                <div>
 
+                  <p className="font-semibold">
 
+                    {item.name}
 
+                  </p>
 
 
-      <h2>
+                  <p className="text-gray-500">
 
-        Total: £{total.toFixed(2)}
+                    Qty: {item.quantity}
 
-      </h2>
+                  </p>
 
 
+                </div>
 
 
 
 
 
-      <button
+                <p className="
+                  font-bold
+                ">
 
-        onClick={placeOrder}
+                  £{(item.price * item.quantity).toFixed(2)}
 
-        disabled={loading}
+                </p>
 
-        style={{
 
-          padding:"15px 25px",
 
-          background:"#ff8c00",
 
-          color:"white",
 
-          border:"none",
+              </div>
 
-          borderRadius:"10px",
 
-          cursor:"pointer"
+            ))
+          }
 
-        }}
 
-      >
 
-        {
 
-          loading
 
-          ?
 
-          "Processing..."
 
-          :
+          <div className="
+            flex
+            justify-between
+            text-xl
+            font-bold
+            mt-6
+          ">
 
-          "Confirm Order 🚚"
 
-        }
+            <span>
 
+              Total
 
-      </button>
+            </span>
 
 
+            <span className="
+              text-orange-500
+            ">
 
+              £{total.toFixed(2)}
+
+            </span>
+
+
+          </div>
+
+
+
+
+
+
+
+          <button
+
+            onClick={placeOrder}
+
+            disabled={loading}
+
+            className="
+              w-full
+              mt-6
+              bg-orange-500
+              text-white
+              py-3
+              rounded-full
+              font-bold
+              hover:bg-orange-600
+              disabled:opacity-50
+            "
+
+          >
+
+
+            {
+
+              loading
+
+              ?
+
+              "Processing..."
+
+              :
+
+              "Confirm Order 🚚"
+
+            }
+
+
+          </button>
+
+
+
+
+
+
+        </div>
+
+
+
+
+
+
+      </div>
 
 
     </div>
@@ -468,8 +554,8 @@ function Checkout({ cart }) {
 
   );
 
-}
 
+}
 
 
 export default Checkout;
