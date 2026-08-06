@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-
 import { supabase } from "../services/supabaseClient";
 
 import ProductCard from "../components/ProductCard";
@@ -13,144 +12,77 @@ import DealsToday from "../components/DealsToday";
 
 function Home({ addToCart }) {
 
-
   const [products, setProducts] = useState([]);
-
   const [stores, setStores] = useState([]);
-
   const [categories, setCategories] = useState([]);
-
 
   const [loading, setLoading] = useState(true);
 
-
-
   const [selectedStore, setSelectedStore] = useState("All");
-
   const [selectedCategory, setSelectedCategory] = useState("All");
-
   const [search, setSearch] = useState("");
 
 
 
-
-
   useEffect(() => {
-
-    loadData();
-
+    getData();
   }, []);
 
 
 
 
-
-
-  async function loadData() {
-
-
-    setLoading(true);
-
+  async function getData() {
 
 
     const {
       data: productsData,
       error: productsError
-
     } = await supabase
-
       .from("Products")
-
       .select("*")
-
       .eq("available", true);
-
-
 
 
 
     const {
       data: storesData,
       error: storesError
-
     } = await supabase
-
       .from("Stores")
-
       .select("*");
-
-
 
 
 
     const {
       data: categoriesData,
       error: categoriesError
-
     } = await supabase
-
       .from("Categories")
-
       .select("*");
 
 
 
 
+    if (productsError)
+      console.log(productsError);
 
 
-
-    if (productsError) {
-
-      console.log(
-        "Products error:",
-        productsError
-      );
-
-    }
+    if (storesError)
+      console.log(storesError);
 
 
-
-    if (storesError) {
-
-      console.log(
-        "Stores error:",
-        storesError
-      );
-
-    }
-
-
-
-    if (categoriesError) {
-
-      console.log(
-        "Categories error:",
-        categoriesError
-      );
-
-    }
-
-
-
-
+    if (categoriesError)
+      console.log(categoriesError);
 
 
 
     setProducts(productsData || []);
-
     setStores(storesData || []);
-
     setCategories(categoriesData || []);
-
-
 
     setLoading(false);
 
-
   }
-
-
-
 
 
 
@@ -158,23 +90,14 @@ function Home({ addToCart }) {
 
   function getStoreName(storeId) {
 
-
     const store = stores.find(
-
-      (store) =>
-
-        store.id === storeId
-
+      item => item.id === storeId
     );
 
 
-
     return store
-
       ? store.name
-
       : "Unknown";
-
 
   }
 
@@ -183,211 +106,198 @@ function Home({ addToCart }) {
 
 
 
-
-  const filteredProducts = products.filter(
-
-    (product) => {
+  const filteredProducts = products.filter(product => {
 
 
-      const matchesStore =
-
-        selectedStore === "All"
-
-        ||
-
-        product.store_id === selectedStore;
+    const matchesStore =
+      selectedStore === "All"
+      ||
+      product.store_id === selectedStore;
 
 
 
-
-
-      const matchesCategory =
-
-        selectedCategory === "All"
-
-        ||
-
-        product.category_id === selectedCategory;
+    const matchesCategory =
+      selectedCategory === "All"
+      ||
+      product.category_id === selectedCategory;
 
 
 
 
-
-      const matchesSearch =
-
-        product.name
-
-          ?.toLowerCase()
-
-          .includes(
-
-            search.toLowerCase()
-
-          );
+    const matchesSearch =
+      product.name
+        ?.toLowerCase()
+        .includes(
+          search.toLowerCase()
+        );
 
 
 
-
-
-      return (
-
-        matchesStore &&
-
-        matchesCategory &&
-
-        matchesSearch
-
-      );
-
-
-    }
-
-  );
     return (
+      matchesStore &&
+      matchesCategory &&
+      matchesSearch
+    );
 
-    <div>
+  });
 
 
-      <Hero />
 
 
 
-      <PopularProducts
 
-        products={products}
 
-        addToCart={addToCart}
+  return (
 
-      />
+    <div className="min-h-screen bg-gray-50">
 
 
+      <section className="max-w-7xl mx-auto px-4 py-6">
 
-      <DealsToday
 
-        products={products}
+        <Hero />
 
-        addToCart={addToCart}
 
-      />
+        <div className="mt-8">
+          <PopularProducts
+            products={products}
+            addToCart={addToCart}
+          />
+        </div>
 
 
 
+        <div className="mt-8">
+          <DealsToday
+            products={products}
+            addToCart={addToCart}
+          />
+        </div>
 
 
-      <h2>
 
-        Grocery delivery 🚚
+        <div className="mt-10">
 
-      </h2>
+          <h1 className="text-4xl font-bold text-gray-800">
+            Grocery delivery 🚚
+          </h1>
 
 
-
-
-
-
-      <Filters
-
-        stores={stores}
-
-        categories={categories}
-
-        selectedStore={selectedStore}
-
-        setSelectedStore={setSelectedStore}
-
-        selectedCategory={selectedCategory}
-
-        setSelectedCategory={setSelectedCategory}
-
-        search={search}
-
-        setSearch={setSearch}
-
-      />
-
-
-
-
-
-
-
-      <StoreSelector
-
-        stores={stores}
-
-        selectedStore={selectedStore}
-
-        setSelectedStore={setSelectedStore}
-
-      />
-
-
-
-
-
-
-
-
-      <Categories
-
-        categories={categories}
-
-        selectedCategory={selectedCategory}
-
-        setSelectedCategory={setSelectedCategory}
-
-      />
-
-
-
-
-
-
-
-      {
-
-        loading &&
-
-        (
-
-          <p>
-
-            Loading products...
-
+          <p className="text-gray-500 mt-2">
+            Fresh products delivered to your door
           </p>
 
-        )
-
-      }
+        </div>
 
 
 
 
 
+        <div className="mt-8 bg-white rounded-2xl shadow p-5">
+
+
+          <Filters
+
+            stores={stores}
+
+            categories={categories}
+
+            selectedStore={selectedStore}
+
+            setSelectedStore={setSelectedStore}
+
+            selectedCategory={selectedCategory}
+
+            setSelectedCategory={setSelectedCategory}
+
+            search={search}
+
+            setSearch={setSearch}
+
+          />
+
+        </div>
 
 
 
-      <div
 
-        style={{
 
-          display:"flex",
+        <div className="mt-6">
 
-          flexWrap:"wrap",
+          <StoreSelector
 
-          gap:"15px"
+            stores={stores}
 
-        }}
+            selectedStore={selectedStore}
 
-      >
+            setSelectedStore={setSelectedStore}
+
+          />
+
+        </div>
+
+
+
+
+
+
+        <div className="mt-6">
+
+
+          <Categories
+
+            categories={categories}
+
+            selectedCategory={selectedCategory}
+
+            setSelectedCategory={setSelectedCategory}
+
+          />
+
+
+        </div>
+
+
+
+
 
 
 
         {
+          loading && (
 
-          filteredProducts.map(
+            <div className="text-center py-10">
 
-            (product) => (
+              <p className="text-orange-500 text-lg">
+                Loading products...
+              </p>
+
+            </div>
+
+          )
+        }
+
+
+
+
+
+
+
+
+
+        <div className="
+          grid
+          grid-cols-1
+          sm:grid-cols-2
+          md:grid-cols-3
+          lg:grid-cols-4
+          gap-6
+          mt-8
+        ">
+
+
+          {
+            filteredProducts.map(product => (
 
 
               <ProductCard
@@ -400,13 +310,7 @@ function Home({ addToCart }) {
 
 
                 storeName={
-
-                  getStoreName(
-
-                    product.store_id
-
-                  )
-
+                  getStoreName(product.store_id)
                 }
 
 
@@ -416,52 +320,45 @@ function Home({ addToCart }) {
               />
 
 
-            )
+            ))
+          }
+
+
+        </div>
+
+
+
+
+
+
+
+        {
+          !loading &&
+          filteredProducts.length === 0 && (
+
+            <div className="text-center py-10">
+
+              <p className="text-gray-500">
+                No products found
+              </p>
+
+            </div>
 
           )
-
         }
 
 
 
-      </div>
 
 
-
-
-
-
-
-
-      {
-
-        !loading &&
-
-        filteredProducts.length === 0 &&
-
-        (
-
-          <p>
-
-            No products found
-
-          </p>
-
-        )
-
-      }
-
-
-
+      </section>
 
 
     </div>
 
   );
 
-
 }
-
 
 
 export default Home;
