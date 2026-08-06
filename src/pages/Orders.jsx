@@ -13,6 +13,7 @@ function Orders() {
 
 
 
+
   useEffect(() => {
 
     loadOrders();
@@ -25,7 +26,38 @@ function Orders() {
 
 
 
-  async function loadOrders() {
+
+
+  async function loadOrders(){
+
+
+
+    const {
+
+      data:sessionData
+
+    } = await supabase.auth.getSession();
+
+
+
+
+    const user = sessionData.session?.user;
+
+
+
+    if(!user){
+
+      setLoading(false);
+
+      return;
+
+    }
+
+
+
+
+
+
 
 
     const {
@@ -39,6 +71,7 @@ function Orders() {
 
       .from("orders")
 
+
       .select(`
 
         *,
@@ -46,6 +79,16 @@ function Orders() {
         order_items (*)
 
       `)
+
+
+      .eq(
+
+        "user_id",
+
+        user.id
+
+      )
+
 
       .order(
 
@@ -69,11 +112,7 @@ function Orders() {
 
       console.log(error);
 
-      alert(error.message);
-
     }
-
-
 
 
 
@@ -94,10 +133,10 @@ function Orders() {
 
 
 
-  function statusColor(status){
+  function statusStyle(status){
 
 
-    switch(status){
+    switch(status?.toLowerCase()){
 
 
       case "delivered":
@@ -114,13 +153,62 @@ function Orders() {
 
       case "out_for_delivery":
 
+      case "out for delivery":
+
         return "bg-purple-100 text-purple-700";
+
+
+
+      case "pending":
+
+        return "bg-yellow-100 text-yellow-700";
 
 
 
       default:
 
-        return "bg-yellow-100 text-yellow-700";
+        return "bg-gray-100 text-gray-700";
+
+
+    }
+
+
+  }
+
+
+
+
+
+
+
+
+
+  function statusEmoji(status){
+
+
+    switch(status?.toLowerCase()){
+
+
+      case "delivered":
+
+        return "🟢";
+
+
+      case "preparing":
+
+        return "🔵";
+
+
+      case "out_for_delivery":
+
+      case "out for delivery":
+
+        return "🚚";
+
+
+      default:
+
+        return "🟠";
 
 
     }
@@ -141,10 +229,7 @@ function Orders() {
 
     return (
 
-      <div className="
-        p-10
-        text-center
-      ">
+      <div className="p-10 text-center">
 
         Loading orders...
 
@@ -152,9 +237,7 @@ function Orders() {
 
     );
 
-
   }
-
 
 
 
@@ -173,7 +256,6 @@ function Orders() {
       py-10
       px-4
     ">
-
 
 
       <div className="
@@ -200,28 +282,26 @@ function Orders() {
 
 
 
-        {
 
+
+        {
           orders.length === 0 && (
 
 
             <div className="
               bg-white
-              p-8
               rounded-xl
+              shadow
+              p-8
               text-center
             ">
 
-
               No orders found
-
 
             </div>
 
 
           )
-
-
         }
 
 
@@ -233,7 +313,6 @@ function Orders() {
 
 
         {
-
           orders.map(order => (
 
 
@@ -262,13 +341,14 @@ function Orders() {
                 flex
                 justify-between
                 items-center
-                mb-5
+                mb-6
               ">
 
 
+
                 <h2 className="
-                  font-bold
                   text-xl
+                  font-bold
                 ">
 
 
@@ -281,15 +361,28 @@ function Orders() {
 
 
 
+
+
                 <span className={`
+
                   px-3
+
                   py-1
+
                   rounded-full
+
                   text-sm
+
                   font-bold
-                  ${statusColor(order.status)}
+
+                  ${statusStyle(order.status)}
+
                 `}>
 
+
+                  {statusEmoji(order.status)}
+
+                  {" "}
 
                   {order.status}
 
@@ -298,8 +391,8 @@ function Orders() {
 
 
 
-              </div>
 
+              </div>
 
 
 
@@ -324,16 +417,12 @@ function Orders() {
 
 
 
-              <div className="
-                space-y-3
-                mb-5
-              ">
 
+
+              <div className="space-y-3">
 
 
                 {
-
-
                   order.order_items?.map(item => (
 
 
@@ -346,11 +435,10 @@ function Orders() {
                         flex
                         justify-between
                         border-b
-                        pb-2
+                        pb-3
                       "
 
                     >
-
 
 
 
@@ -359,24 +447,17 @@ function Orders() {
 
                         <p className="font-semibold">
 
-
                           {item.product_name}
-
 
                         </p>
 
 
 
-                        <p className="
-                          text-gray-500
-                        ">
-
+                        <p className="text-gray-500">
 
                           Quantity: {item.quantity}
 
-
                         </p>
-
 
 
                       </div>
@@ -389,18 +470,21 @@ function Orders() {
                       <p className="font-bold">
 
 
-                        £{(
+                        £
+                        {
 
-                          item.price *
+                          (
 
-                          item.quantity
+                            item.price *
 
-                        ).toFixed(2)}
+                            item.quantity
 
+                          ).toFixed(2)
+
+                        }
 
 
                       </p>
-
 
 
 
@@ -409,9 +493,6 @@ function Orders() {
 
 
                   ))
-
-
-
                 }
 
 
@@ -427,6 +508,7 @@ function Orders() {
 
 
               <div className="
+                mt-6
                 space-y-2
                 text-gray-600
               ">
@@ -437,7 +519,6 @@ function Orders() {
                   📍 {order.customer_address}
 
                 </p>
-
 
 
                 <p>
@@ -457,9 +538,7 @@ function Orders() {
                   {
 
                     new Date(
-
                       order.created_at
-
                     ).toLocaleDateString()
 
                   }
@@ -468,8 +547,8 @@ function Orders() {
                 </p>
 
 
-              </div>
 
+              </div>
 
 
 
@@ -482,10 +561,11 @@ function Orders() {
               <div className="
                 border-t
                 mt-5
-                pt-4
+                pt-5
                 flex
                 justify-between
               ">
+
 
 
                 <span className="
@@ -493,11 +573,10 @@ function Orders() {
                   text-xl
                 ">
 
-
                   Total
 
-
                 </span>
+
 
 
 
@@ -509,7 +588,14 @@ function Orders() {
                 ">
 
 
-                  £{Number(order.total).toFixed(2)}
+                  £
+
+                  {
+
+                    Number(order.total)
+                    .toFixed(2)
+
+                  }
 
 
                 </span>
@@ -523,21 +609,21 @@ function Orders() {
 
 
 
+
             </div>
 
 
 
           ))
-
-
         }
 
 
 
 
 
-      </div>
 
+
+      </div>
 
 
     </div>
@@ -547,7 +633,6 @@ function Orders() {
 
 
 }
-
 
 
 export default Orders;
