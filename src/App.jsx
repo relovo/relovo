@@ -10,6 +10,8 @@ import Home from "./pages/Home";
 import Checkout from "./pages/Checkout";
 import Orders from "./pages/Orders";
 import Profile from "./pages/Profile";
+import Register from "./pages/Register";
+
 
 
 function App() {
@@ -17,7 +19,6 @@ function App() {
 
   const [cart, setCart] = useState([]);
 
-  const [cartOpen, setCartOpen] = useState(false);
 
 
 
@@ -28,12 +29,13 @@ function App() {
     const productId = Number(product.id);
 
 
+
     setCart((currentCart) => {
 
 
       const existingProduct = currentCart.find(
 
-        item => item.id === productId
+        (item) => item.id === productId
 
       );
 
@@ -42,19 +44,25 @@ function App() {
       if (existingProduct) {
 
 
-        return currentCart.map(item =>
+        return currentCart.map((item) =>
+
 
           item.id === productId
 
-            ? {
+          ?
 
-                ...item,
+          {
 
-                quantity: item.quantity + 1
+            ...item,
 
-              }
+            quantity: item.quantity + 1,
 
-            : item
+          }
+
+          :
+
+          item
+
 
         );
 
@@ -63,9 +71,14 @@ function App() {
 
 
 
+
+
+
       return [
 
+
         ...currentCart,
+
 
         {
 
@@ -86,15 +99,22 @@ function App() {
 
           quantity: 1,
 
+
         }
 
+
       ];
+
 
 
     });
 
 
+
   }
+
+
+
 
 
 
@@ -104,18 +124,23 @@ function App() {
   function removeFromCart(id) {
 
 
-    setCart(currentCart =>
+    setCart((currentCart) =>
+
 
       currentCart.filter(
 
-        item => item.id !== id
+        (item) => item.id !== id
 
       )
+
 
     );
 
 
   }
+
+
+
 
 
 
@@ -125,32 +150,45 @@ function App() {
   function increaseQuantity(id) {
 
 
-    setCart(currentCart =>
+    setCart((currentCart) =>
 
-      currentCart.map(item =>
+
+      currentCart.map((item) =>
+
 
         item.id === id
 
-          ?
 
-          {
+        ?
 
-            ...item,
 
-            quantity: item.quantity + 1
+        {
 
-          }
+          ...item,
 
-          :
+          quantity: item.quantity + 1,
 
-          item
+
+        }
+
+
+        :
+
+
+        item
+
+
 
       )
+
 
     );
 
 
   }
+
+
+
 
 
 
@@ -160,40 +198,53 @@ function App() {
   function decreaseQuantity(id) {
 
 
-    setCart(currentCart =>
+    setCart((currentCart) =>
 
 
       currentCart
 
-        .map(item =>
+
+      .map((item) =>
 
 
-          item.id === id
-
-            ?
-
-            {
-
-              ...item,
-
-              quantity: item.quantity - 1
-
-            }
-
-            :
-
-            item
+        item.id === id
 
 
-        )
+        ?
 
-        .filter(item => item.quantity > 0)
+
+        {
+
+          ...item,
+
+          quantity: item.quantity - 1,
+
+
+        }
+
+
+        :
+
+
+        item
+
+
+
+      )
+
+
+      .filter(
+
+        (item) => item.quantity > 0
+
+      )
 
 
     );
 
 
   }
+
 
 
 
@@ -218,7 +269,9 @@ function App() {
 
 
 
+
   return (
+
 
     <BrowserRouter>
 
@@ -227,8 +280,6 @@ function App() {
 
         cartItems={cartItems}
 
-        openCart={() => setCartOpen(true)}
-
       />
 
 
@@ -236,6 +287,7 @@ function App() {
 
 
       <Routes>
+
 
 
         <Route
@@ -253,6 +305,9 @@ function App() {
           }
 
         />
+
+
+
 
 
 
@@ -276,6 +331,9 @@ function App() {
 
 
 
+
+
+
         <Route
 
           path="/orders"
@@ -287,6 +345,9 @@ function App() {
           }
 
         />
+
+
+
 
 
 
@@ -305,7 +366,30 @@ function App() {
 
 
 
+
+
+
+
+        <Route
+
+          path="/register"
+
+          element={
+
+            <Register />
+
+          }
+
+        />
+
+
+
+
+
       </Routes>
+
+
+
 
 
 
@@ -313,28 +397,34 @@ function App() {
 
       <Cart
 
+
         cart={cart}
 
-        open={cartOpen}
-
-        closeCart={() => setCartOpen(false)}
 
         removeFromCart={removeFromCart}
 
+
         increaseQuantity={increaseQuantity}
 
+
         decreaseQuantity={decreaseQuantity}
+
+
 
       />
 
 
 
+
+
     </BrowserRouter>
+
 
   );
 
 
 }
+
 
 
 export default App;
