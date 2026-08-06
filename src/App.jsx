@@ -3,7 +3,7 @@ import { Routes, Route } from "react-router-dom";
 
 
 import Navbar from "./components/Navbar";
-import CartDrawer from "./components/CartDrawer";
+import Cart from "./components/Cart";
 
 
 import Home from "./pages/Home";
@@ -13,7 +13,6 @@ import Profile from "./pages/Profile";
 import Orders from "./pages/Orders";
 import Checkout from "./pages/Checkout";
 import Addresses from "./pages/Addresses";
-
 
 
 
@@ -29,14 +28,14 @@ function App() {
 
 
 
-  function addToCart(product){
+
+  function addToCart(product) {
 
 
+    setCart((currentCart) => {
 
-    setCart(prev => {
 
-
-      const existing = prev.find(
+      const existing = currentCart.find(
 
         item => item.id === product.id
 
@@ -44,10 +43,10 @@ function App() {
 
 
 
-      if(existing){
+      if (existing) {
 
 
-        return prev.map(item =>
+        return currentCart.map(item =>
 
 
           item.id === product.id
@@ -55,11 +54,8 @@ function App() {
           ?
 
           {
-
             ...item,
-
-            quantity:item.quantity + 1
-
+            quantity: item.quantity + 1
           }
 
           :
@@ -78,22 +74,17 @@ function App() {
 
       return [
 
-        ...prev,
+        ...currentCart,
 
         {
-
           ...product,
-
-          quantity:1
-
+          quantity: 1
         }
-
 
       ];
 
 
     });
-
 
 
   }
@@ -104,12 +95,14 @@ function App() {
 
 
 
-  function removeFromCart(id){
 
 
-    setCart(prev =>
+  function removeFromCart(id) {
 
-      prev.filter(
+
+    setCart(currentCart =>
+
+      currentCart.filter(
 
         item => item.id !== id
 
@@ -128,11 +121,11 @@ function App() {
 
 
 
-  function updateQuantity(id, quantity){
+  function updateQuantity(id, quantity) {
 
 
+    if (quantity <= 0) {
 
-    if(quantity <= 0){
 
       removeFromCart(id);
 
@@ -143,11 +136,10 @@ function App() {
 
 
 
+    setCart(currentCart =>
 
-    setCart(prev =>
 
-
-      prev.map(item =>
+      currentCart.map(item =>
 
 
         item.id === id
@@ -155,11 +147,8 @@ function App() {
         ?
 
         {
-
           ...item,
-
           quantity
-
         }
 
         :
@@ -183,12 +172,14 @@ function App() {
 
 
 
-  function clearCart(){
+  function clearCart() {
 
 
     setCart([]);
 
+
   }
+
 
 
 
@@ -206,12 +197,9 @@ function App() {
 
       <Navbar
 
-
         cartItems={cart.length}
 
-
         openCart={() => setCartOpen(true)}
-
 
       />
 
@@ -220,23 +208,18 @@ function App() {
 
 
 
-      <CartDrawer
+      <Cart
 
 
         open={cartOpen}
 
-
         closeCart={() => setCartOpen(false)}
-
 
         cart={cart}
 
-
         removeFromCart={removeFromCart}
 
-
         updateQuantity={updateQuantity}
-
 
       />
 
@@ -255,7 +238,6 @@ function App() {
 
         <Route
 
-
           path="/"
 
           element={
@@ -268,7 +250,6 @@ function App() {
 
           }
 
-
         />
 
 
@@ -278,13 +259,11 @@ function App() {
 
 
         <Route
-
 
           path="/login"
 
           element={<Login />}
 
-
         />
 
 
@@ -292,14 +271,13 @@ function App() {
 
 
 
-        <Route
 
+        <Route
 
           path="/register"
 
           element={<Register />}
 
-
         />
 
 
@@ -309,13 +287,11 @@ function App() {
 
 
         <Route
-
 
           path="/profile"
 
           element={<Profile />}
 
-
         />
 
 
@@ -325,13 +301,11 @@ function App() {
 
 
         <Route
-
 
           path="/orders"
 
           element={<Orders />}
 
-
         />
 
 
@@ -341,7 +315,6 @@ function App() {
 
 
         <Route
-
 
           path="/checkout"
 
@@ -353,14 +326,11 @@ function App() {
 
               clearCart={clearCart}
 
-
             />
 
           }
 
-
         />
-
 
 
 
@@ -370,16 +340,11 @@ function App() {
 
         <Route
 
-
           path="/addresses"
 
           element={<Addresses />}
 
-
         />
-
-
-
 
 
 
@@ -389,10 +354,7 @@ function App() {
 
 
 
-
-
     </>
-
 
   );
 
