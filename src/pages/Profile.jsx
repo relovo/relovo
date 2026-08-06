@@ -9,6 +9,7 @@ function Profile() {
   const [loading, setLoading] = useState(true);
 
 
+
   useEffect(() => {
 
     loadProfile();
@@ -22,16 +23,16 @@ function Profile() {
 
 
     const {
-      data: sessionData
-    } = await supabase.auth.getSession();
+      data
+    } = await supabase.auth.getUser();
 
 
 
-    const currentUser = sessionData.session?.user;
+    const currentUser = data.user;
 
 
 
-    console.log("AUTH USER:", currentUser);
+    console.log("USER:", currentUser);
 
 
 
@@ -48,36 +49,51 @@ function Profile() {
 
 
 
+    const email =
+
+      currentUser.email ||
+
+      currentUser.user_metadata?.email ||
+
+      currentUser.identities?.[0]?.identity_data?.email;
+
+
+
+    console.log("SEARCH EMAIL:", email);
+
+
+
+
 
     const {
-      data,
+
+      data: profileData,
+
       error
+
     } = await supabase
 
       .from("Profiles")
 
       .select("*")
 
-      .eq("email", currentUser.email)
+      .eq("email", email)
+
       .maybeSingle();
 
 
 
 
 
-    console.log("PROFILE DATA:", data);
-    console.log("PROFILE ERROR:", error);
+    console.log("PROFILE:", profileData);
+
+    console.log("ERROR:", error);
 
 
 
 
-    if (data) {
 
-      setProfile(data);
-
-    }
-
-
+    setProfile(profileData);
 
     setLoading(false);
 
@@ -88,17 +104,22 @@ function Profile() {
 
 
 
+
+
   if (loading) {
 
     return (
 
       <div style={{padding:"30px"}}>
+
         Loading profile...
+
       </div>
 
     );
 
   }
+
 
 
 
@@ -111,7 +132,9 @@ function Profile() {
       style={{
 
         maxWidth:"800px",
+
         margin:"40px auto",
+
         padding:"20px"
 
       }}
@@ -119,9 +142,13 @@ function Profile() {
     >
 
 
+
       <h1>
+
         👤 My Profile
+
       </h1>
+
 
 
 
@@ -131,31 +158,36 @@ function Profile() {
         style={{
 
           background:"white",
+
           border:"1px solid #ddd",
+
           borderRadius:"15px",
-          padding:"25px",
-          marginTop:"20px"
+
+          padding:"25px"
 
         }}
 
       >
 
 
+
         <h2>
 
-          👤{" "}
+          👤
+
+          {" "}
 
           {
 
-            profile
+          profile
 
-            ?
+          ?
 
-            `${profile.first_name} ${profile.last_name}`
+          `${profile.first_name} ${profile.last_name}`
 
-            :
+          :
 
-            "Guest User"
+          "Guest User"
 
           }
 
@@ -164,55 +196,54 @@ function Profile() {
 
 
         <p>
+
           Welcome to Relovo 🚚
+
         </p>
+
+
+
+
+        <p>
+
+          📧 Email:
+
+          {" "}
+
+          {user?.email}
+
+        </p>
+
+
+
+
+        <p>
+
+          📱 Phone:
+
+          {" "}
+
+          {profile?.phone || "-"}
+
+        </p>
+
+
+
+
+        <p>
+
+          👤 Role:
+
+          {" "}
+
+          {profile?.role || "customer"}
+
+        </p>
+
 
 
 
       </div>
-
-
-
-
-
-      <div
-
-        style={{
-
-          background:"white",
-          border:"1px solid #ddd",
-          borderRadius:"15px",
-          padding:"25px",
-          marginTop:"20px"
-
-        }}
-
-      >
-
-
-        <h2>
-          Personal Information
-        </h2>
-
-
-        <p>
-          📧 Email: {user?.email || "-"}
-        </p>
-
-
-        <p>
-          📱 Phone: {profile?.phone || "-"}
-        </p>
-
-
-        <p>
-          👤 Role: {profile?.role || "customer"}
-        </p>
-
-
-
-      </div>
-
 
 
 
