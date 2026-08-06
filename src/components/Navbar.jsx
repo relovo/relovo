@@ -5,16 +5,23 @@ import { supabase } from "../services/supabaseClient";
 
 function Navbar({ cartItems, openCart }) {
 
+
   const navigate = useNavigate();
 
+
   const [user, setUser] = useState(null);
+
   const [profile, setProfile] = useState(null);
+
+
 
 
 
   useEffect(() => {
 
+
     getUser();
+
 
 
     const {
@@ -22,17 +29,29 @@ function Navbar({ cartItems, openCart }) {
     } = supabase.auth.onAuthStateChange(
       (_event, session) => {
 
-        setUser(session?.user || null);
+
+        const currentUser = session?.user || null;
 
 
-        if (session?.user) {
-          loadProfile(session.user.id);
+        setUser(currentUser);
+
+
+
+        if (currentUser) {
+
+          loadProfile(currentUser.id);
+
         } else {
+
           setProfile(null);
+
         }
+
 
       }
     );
+
+
 
 
     return () => {
@@ -42,7 +61,10 @@ function Navbar({ cartItems, openCart }) {
     };
 
 
+
   }, []);
+
+
 
 
 
@@ -50,25 +72,33 @@ function Navbar({ cartItems, openCart }) {
 
   async function getUser() {
 
+
     const {
       data
     } = await supabase.auth.getSession();
 
 
+
     const currentUser = data.session?.user || null;
+
 
 
     setUser(currentUser);
 
 
 
-    if (currentUser) {
+
+    if(currentUser){
 
       loadProfile(currentUser.id);
 
     }
 
+
+
   }
+
+
 
 
 
@@ -78,26 +108,48 @@ function Navbar({ cartItems, openCart }) {
 
 
     const {
+
       data,
+
       error
+
     } = await supabase
+
+
       .from("Profiles")
+
+
       .select("*")
-      .eq("email", user?.email)
-      .single();
+
+
+      .eq("user_id", userId)
+
+
+      .maybeSingle();
 
 
 
-    if (error) {
 
-      console.log(error);
+
+    if(error){
+
+      console.log("PROFILE ERROR:", error);
 
       return;
 
     }
 
 
+
+
+
+    console.log("NAVBAR PROFILE:", data);
+
+
+
     setProfile(data);
+
+
 
   }
 
@@ -105,7 +157,10 @@ function Navbar({ cartItems, openCart }) {
 
 
 
-  async function logout() {
+
+
+
+  async function logout(){
 
 
     await supabase.auth.signOut();
@@ -113,13 +168,17 @@ function Navbar({ cartItems, openCart }) {
 
     navigate("/login");
 
+
   }
 
 
 
 
 
+
+
   return (
+
 
     <nav
       className="
@@ -131,6 +190,7 @@ function Navbar({ cartItems, openCart }) {
         z-50
       "
     >
+
 
 
       <div
@@ -146,8 +206,6 @@ function Navbar({ cartItems, openCart }) {
       >
 
 
-
-        {/* LOGO */}
 
         <Link
           to="/"
@@ -165,7 +223,7 @@ function Navbar({ cartItems, openCart }) {
 
 
 
-        {/* MENU */}
+
 
         <div
           className="
@@ -174,6 +232,7 @@ function Navbar({ cartItems, openCart }) {
             gap-6
           "
         >
+
 
 
 
@@ -186,12 +245,16 @@ function Navbar({ cartItems, openCart }) {
 
 
 
+
+
           <Link
             to="/orders"
             className="hover:text-orange-100"
           >
             Orders
           </Link>
+
+
 
 
 
@@ -206,16 +269,22 @@ function Navbar({ cartItems, openCart }) {
 
 
 
+
+
           {
             user ? (
 
               <>
+
 
                 <span className="font-semibold">
 
                   👋 {profile?.first_name || "User"}
 
                 </span>
+
+
+
 
 
                 <button
@@ -238,12 +307,15 @@ function Navbar({ cartItems, openCart }) {
                 </button>
 
 
+
               </>
 
 
             ) : (
 
+
               <>
+
 
                 <Link
                   to="/login"
@@ -253,6 +325,7 @@ function Navbar({ cartItems, openCart }) {
                   Login
 
                 </Link>
+
 
 
                 <Link
@@ -265,7 +338,9 @@ function Navbar({ cartItems, openCart }) {
                 </Link>
 
 
+
               </>
+
 
             )
 
@@ -276,7 +351,6 @@ function Navbar({ cartItems, openCart }) {
 
 
 
-          {/* CART */}
 
           <button
 
@@ -289,12 +363,12 @@ function Navbar({ cartItems, openCart }) {
               py-2
               rounded-full
               font-semibold
-              hover:bg-orange-100
             "
 
           >
 
             🛒
+
 
             {
               cartItems > 0 && (
@@ -306,10 +380,12 @@ function Navbar({ cartItems, openCart }) {
                 </span>
 
               )
+
             }
 
 
           </button>
+
 
 
 
@@ -321,9 +397,12 @@ function Navbar({ cartItems, openCart }) {
       </div>
 
 
+
     </nav>
 
+
   );
+
 
 }
 
