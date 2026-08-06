@@ -1,11 +1,15 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "../services/supabaseClient";
 
 
 function Checkout({ cart }) {
 
 
-  const [address, setAddress] = useState("");
+  const [user, setUser] = useState(null);
+
+  const [addresses, setAddresses] = useState([]);
+
+  const [selectedAddress, setSelectedAddress] = useState("");
 
   const [slot, setSlot] = useState("");
 
@@ -15,11 +19,109 @@ function Checkout({ cart }) {
 
 
 
+
+
+  useEffect(() => {
+
+    loadAddresses();
+
+  }, []);
+
+
+
+
+
+
+
+
+  async function loadAddresses() {
+
+
+    const {
+      data
+    } = await supabase.auth.getUser();
+
+
+
+    const currentUser = data.user;
+
+
+
+    setUser(currentUser);
+
+
+
+
+    if(!currentUser){
+
+      return;
+
+    }
+
+
+
+
+
+
+    const {
+
+      data: addressData,
+
+      error
+
+    } = await supabase
+
+
+      .from("addresses")
+
+
+      .select("*")
+
+
+      .eq("user_id", currentUser.id)
+
+      .order("created_at", {
+
+        ascending:false
+
+      });
+
+
+
+
+
+    if(error){
+
+      console.log(error);
+
+    }
+
+
+
+
+    setAddresses(addressData || []);
+
+
+
+  }
+
+
+
+
+
+
+
+
+
   const total = cart.reduce(
 
-    (sum, item) =>
+    (sum,item)=>
 
-      sum + Number(item.price) * item.quantity,
+      sum +
+
+      Number(item.price) *
+
+      item.quantity,
 
     0
 
@@ -31,12 +133,17 @@ function Checkout({ cart }) {
 
 
 
-  async function placeOrder() {
 
 
-    if (!address) {
 
-      alert("Please enter delivery address");
+
+  async function placeOrder(){
+
+
+
+    if(!selectedAddress){
+
+      alert("Please select delivery address");
 
       return;
 
@@ -44,7 +151,9 @@ function Checkout({ cart }) {
 
 
 
-    if (!slot) {
+
+
+    if(!slot){
 
       alert("Please select delivery slot");
 
@@ -54,7 +163,9 @@ function Checkout({ cart }) {
 
 
 
-    if (cart.length === 0) {
+
+
+    if(cart.length===0){
 
       alert("Your cart is empty");
 
@@ -65,7 +176,25 @@ function Checkout({ cart }) {
 
 
 
+
+
+
     setLoading(true);
+
+
+
+
+
+    const address = addresses.find(
+
+      item =>
+
+      item.id === Number(selectedAddress)
+
+    );
+
+
+
 
 
 
@@ -74,31 +203,39 @@ function Checkout({ cart }) {
 
     const {
 
-      data: order,
+      data:order,
 
-      error: orderError
+      error:orderError
 
     } = await supabase
 
+
       .from("orders")
+
 
       .insert([
 
         {
 
-          customer_address: address,
+          user_id:user.id,
 
-          delivery_slot: slot,
+          customer_address:
 
-          total: total,
+          `${address.address_line}, ${address.city}, ${address.postcode}`,
 
-          status: "pending"
+          delivery_slot:slot,
+
+          total:total,
+
+          status:"pending"
 
         }
 
       ])
 
+
       .select()
+
 
       .single();
 
@@ -107,8 +244,8 @@ function Checkout({ cart }) {
 
 
 
-    if (orderError) {
 
+    if(orderError){
 
       console.log(orderError);
 
@@ -127,26 +264,24 @@ function Checkout({ cart }) {
 
 
 
-    const items = cart.map(item => ({
 
+    const items = cart.map(item=>(
 
-      order_id: order.id,
+      {
 
+        order_id:order.id,
 
-      product_id: Number(item.id),
+        product_id:Number(item.id),
 
+        product_name:item.name,
 
-      product_name: item.name,
+        quantity:item.quantity,
 
+        price:Number(item.price)
 
-      quantity: item.quantity,
+      }
 
-
-      price: Number(item.price)
-
-
-    }));
-
+    ));
 
 
 
@@ -156,11 +291,13 @@ function Checkout({ cart }) {
 
     const {
 
-      error: itemsError
+      error:itemsError
 
     } = await supabase
 
+
       .from("order_items")
+
 
       .insert(items);
 
@@ -169,9 +306,7 @@ function Checkout({ cart }) {
 
 
 
-
-    if (itemsError) {
-
+    if(itemsError){
 
       console.log(itemsError);
 
@@ -187,11 +322,12 @@ function Checkout({ cart }) {
 
 
 
-
     alert("Order confirmed 🚚");
 
 
+
     setLoading(false);
+
 
 
   }
@@ -206,85 +342,28 @@ function Checkout({ cart }) {
 
   return (
 
+    <div
 
-    <div className="
-      min-h-screen
-      bg-gray-50
-      py-10
-      px-4
-    ">
+      style={{
 
+        padding:"30px",
 
-      <div className="
-        max-w-5xl
-        mx-auto
-        grid
-        md:grid-cols-2
-        gap-8
-      ">
+        maxWidth:"700px",
+
+        margin:"auto"
+
+      }}
+
+    >
 
 
 
 
+      <h1>
 
+        🛒 Checkout
 
-        {/* DELIVERY */}
-
-
-        <div className="
-          bg-white
-          rounded-2xl
-          shadow
-          p-6
-        ">
-
-
-
-          <h1 className="
-            text-3xl
-            font-bold
-            mb-6
-          ">
-
-            🚚 Checkout
-
-          </h1>
-
-
-
-
-
-          <label className="
-            font-semibold
-          ">
-
-            Delivery Address
-
-          </label>
-
-
-
-          <textarea
-
-            value={address}
-
-            onChange={(e)=>setAddress(e.target.value)}
-
-            placeholder="Enter your delivery address"
-
-            className="
-              w-full
-              mt-2
-              border
-              rounded-xl
-              p-3
-              h-32
-              outline-none
-              focus:ring-2
-              focus:ring-orange-400
-            "
-
-          />
+      </h1>
 
 
 
@@ -292,270 +371,294 @@ function Checkout({ cart }) {
 
 
 
+      <h2>
 
-          <label className="
-            font-semibold
-            block
-            mt-6
-          ">
+        📍 Delivery Address
 
-            Delivery Slot
-
-          </label>
+      </h2>
 
 
 
 
 
-          <select
 
-            value={slot}
+      {
 
-            onChange={(e)=>setSlot(e.target.value)}
+        addresses.length === 0
 
-            className="
-              w-full
-              mt-2
-              border
-              rounded-xl
-              p-3
-            "
+        ?
+
+        <p>
+
+          No saved addresses. Go to Profile and add one.
+
+        </p>
+
+
+        :
+
+
+        addresses.map(address=>(
+
+
+          <div
+
+            key={address.id}
+
+            style={{
+
+              border:"1px solid #ddd",
+
+              padding:"15px",
+
+              borderRadius:"12px",
+
+              marginBottom:"10px"
+
+            }}
 
           >
 
 
-            <option value="">
+            <label>
 
-              Select time
 
-            </option>
+              <input
 
+                type="radio"
 
-            <option>
+                name="address"
 
-              09:00 - 11:00
+                value={address.id}
 
-            </option>
+                onChange={(e)=>
 
+                  setSelectedAddress(e.target.value)
 
-            <option>
+                }
 
-              11:00 - 13:00
+              />
 
-            </option>
 
 
-            <option>
+              {" "}
 
-              18:00 - 20:00
 
-            </option>
+              🏠 {address.label}
 
 
-          </select>
+              <br/>
 
 
+              {address.address_line}
 
 
+              <br/>
 
-        </div>
 
+              {address.city}
 
+              {" "}
 
+              {address.postcode}
 
 
 
+            </label>
 
-
-
-        {/* ORDER SUMMARY */}
-
-
-
-        <div className="
-          bg-white
-          rounded-2xl
-          shadow
-          p-6
-          h-fit
-        ">
-
-
-
-          <h2 className="
-            text-2xl
-            font-bold
-            mb-5
-          ">
-
-            🛒 Your Order
-
-          </h2>
-
-
-
-
-
-
-
-          {
-            cart.map(item => (
-
-
-              <div
-
-                key={item.id}
-
-                className="
-                  flex
-                  justify-between
-                  border-b
-                  py-3
-                "
-
-              >
-
-
-
-                <div>
-
-                  <p className="font-semibold">
-
-                    {item.name}
-
-                  </p>
-
-
-                  <p className="text-gray-500">
-
-                    Qty: {item.quantity}
-
-                  </p>
-
-
-                </div>
-
-
-
-
-
-                <p className="
-                  font-bold
-                ">
-
-                  £{(item.price * item.quantity).toFixed(2)}
-
-                </p>
-
-
-
-
-
-              </div>
-
-
-            ))
-          }
-
-
-
-
-
-
-
-          <div className="
-            flex
-            justify-between
-            text-xl
-            font-bold
-            mt-6
-          ">
-
-
-            <span>
-
-              Total
-
-            </span>
-
-
-            <span className="
-              text-orange-500
-            ">
-
-              £{total.toFixed(2)}
-
-            </span>
 
 
           </div>
 
 
+        ))
 
-
-
-
-
-          <button
-
-            onClick={placeOrder}
-
-            disabled={loading}
-
-            className="
-              w-full
-              mt-6
-              bg-orange-500
-              text-white
-              py-3
-              rounded-full
-              font-bold
-              hover:bg-orange-600
-              disabled:opacity-50
-            "
-
-          >
-
-
-            {
-
-              loading
-
-              ?
-
-              "Processing..."
-
-              :
-
-              "Confirm Order 🚚"
-
-            }
-
-
-          </button>
+      }
 
 
 
 
 
 
-        </div>
+
+
+      <h2>
+
+        🚚 Delivery Slot
+
+      </h2>
+
+
+
+
+
+      <select
+
+        value={slot}
+
+        onChange={(e)=>
+
+          setSlot(e.target.value)
+
+        }
+
+        style={{
+
+          width:"100%",
+
+          padding:"12px"
+
+        }}
+
+      >
+
+
+        <option value="">
+
+          Select time
+
+        </option>
+
+
+        <option>
+
+          09:00 - 11:00
+
+        </option>
+
+
+        <option>
+
+          11:00 - 13:00
+
+        </option>
+
+
+        <option>
+
+          18:00 - 20:00
+
+        </option>
+
+
+      </select>
 
 
 
 
 
 
-      </div>
+
+      <h2>
+
+        Your Order
+
+      </h2>
+
+
+
+
+
+      {
+
+        cart.map(item=>(
+
+
+          <p key={item.id}>
+
+
+            {item.name}
+
+            {" x "}
+
+            {item.quantity}
+
+            {" - £"}
+
+            {(item.price * item.quantity).toFixed(2)}
+
+
+          </p>
+
+
+        ))
+
+      }
+
+
+
+
+
+
+
+      <h2>
+
+        Total: £{total.toFixed(2)}
+
+      </h2>
+
+
+
+
+
+
+
+      <button
+
+        onClick={placeOrder}
+
+        disabled={loading}
+
+        style={{
+
+          width:"100%",
+
+          padding:"15px",
+
+          background:"#ff8c00",
+
+          color:"white",
+
+          border:"none",
+
+          borderRadius:"10px",
+
+          fontSize:"16px"
+
+        }}
+
+      >
+
+
+        {
+
+          loading
+
+          ?
+
+          "Processing..."
+
+          :
+
+          "Confirm Order 🚚"
+
+        }
+
+
+      </button>
+
+
+
+
 
 
     </div>
-
 
   );
 
 
 }
+
 
 
 export default Checkout;
