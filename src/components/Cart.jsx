@@ -5,6 +5,10 @@ function Cart({
 
   cart,
 
+  open,
+
+  closeCart,
+
   removeFromCart,
 
   increaseQuantity,
@@ -15,7 +19,6 @@ function Cart({
 
 
   const navigate = useNavigate();
-
 
 
 
@@ -34,206 +37,30 @@ function Cart({
 
 
 
-
   return (
 
-
-    <div
-
-      style={{
-
-        position:"fixed",
-
-        right:"20px",
-
-        bottom:"20px",
-
-        width:"320px",
-
-        background:"white",
-
-        border:"1px solid #ddd",
-
-        borderRadius:"15px",
-
-        padding:"20px",
-
-        boxShadow:"0 5px 20px rgba(0,0,0,0.15)"
-
-      }}
-
-    >
+    <>
 
 
-
-
-
-
-      <h2>
-
-        🛒 Cart
-
-      </h2>
-
-
-
-
-
-
+      {/* OVERLAY */}
 
       {
+        open && (
 
-        cart.length === 0
+          <div
 
-        ?
+            onClick={closeCart}
 
-        (
+            className="
+              fixed
+              inset-0
+              bg-black/40
+              z-40
+            "
 
-          <p>
-
-            Your cart is empty
-
-          </p>
+          />
 
         )
-
-
-        :
-
-
-        (
-
-          cart.map(item => (
-
-
-
-            <div
-
-              key={item.id}
-
-              style={{
-
-                marginBottom:"15px",
-
-                borderBottom:"1px solid #eee",
-
-                paddingBottom:"10px"
-
-              }}
-
-            >
-
-
-
-              <strong>
-
-                {item.name}
-
-              </strong>
-
-
-
-
-
-              <p>
-
-                £{item.price.toFixed(2)}
-
-              </p>
-
-
-
-
-
-              <button
-
-                onClick={() =>
-
-                  decreaseQuantity(item.id)
-
-                }
-
-              >
-
-                -
-
-              </button>
-
-
-
-
-
-              <span
-
-                style={{
-
-                  margin:"0 10px"
-
-                }}
-
-              >
-
-                {item.quantity}
-
-              </span>
-
-
-
-
-
-              <button
-
-                onClick={() =>
-
-                  increaseQuantity(item.id)
-
-                }
-
-              >
-
-                +
-
-              </button>
-
-
-
-
-
-
-              <button
-
-                onClick={() =>
-
-                  removeFromCart(item.id)
-
-                }
-
-                style={{
-
-                  marginLeft:"10px"
-
-                }}
-
-              >
-
-                ❌
-
-              </button>
-
-
-
-
-
-            </div>
-
-
-
-          ))
-
-        )
-
-
-
       }
 
 
@@ -242,74 +69,384 @@ function Cart({
 
 
 
-      <h3>
+      {/* CART DRAWER */}
 
-        Total: £{total.toFixed(2)}
+      <div
 
-      </h3>
+        className={`
+          fixed
+          top-0
+          right-0
+          h-full
+          w-full
+          sm:w-[400px]
+          bg-white
+          shadow-2xl
+          z-50
+          transform
+          transition-transform
+          duration-300
+          ${open ? "translate-x-0" : "translate-x-full"}
+        `}
+
+      >
 
 
 
 
+        <div className="
+          flex
+          justify-between
+          items-center
+          p-5
+          border-b
+        ">
 
 
+          <h2 className="
+            text-2xl
+            font-bold
+          ">
+
+            🛒 Your Cart
+
+          </h2>
 
 
-      {
-
-        cart.length > 0 &&
-
-        (
 
           <button
 
-            onClick={() =>
+            onClick={closeCart}
 
-              navigate("/checkout")
-
-            }
-
-            style={{
-
-              width:"100%",
-
-              padding:"12px",
-
-              background:"#ff8c00",
-
-              color:"white",
-
-              border:"none",
-
-              borderRadius:"10px",
-
-              cursor:"pointer"
-
-            }}
+            className="
+              text-xl
+              hover:text-orange-500
+            "
 
           >
 
-            Checkout 🚚
+            ✕
+
 
           </button>
 
-        )
 
-      }
-
+        </div>
 
 
 
 
 
-    </div>
 
+
+        <div className="
+          p-5
+          overflow-y-auto
+          h-[calc(100%-170px)]
+        ">
+
+
+
+
+
+          {
+            cart.length === 0
+
+            ?
+
+
+            (
+
+              <p className="
+                text-gray-500
+                text-center
+                mt-10
+              ">
+
+                Your cart is empty
+
+              </p>
+
+            )
+
+
+            :
+
+
+
+            cart.map(item => (
+
+
+              <div
+
+                key={item.id}
+
+                className="
+                  flex
+                  gap-4
+                  border-b
+                  py-4
+                "
+
+              >
+
+
+
+
+                <img
+
+                  src={item.image}
+
+                  alt={item.name}
+
+                  className="
+                    w-20
+                    h-20
+                    rounded-lg
+                    object-cover
+                    bg-gray-100
+                  "
+
+                />
+
+
+
+
+
+                <div className="flex-1">
+
+
+                  <h3 className="
+                    font-semibold
+                  ">
+
+                    {item.name}
+
+                  </h3>
+
+
+
+
+                  <p className="
+                    text-orange-500
+                    font-bold
+                  ">
+
+                    £{item.price.toFixed(2)}
+
+                  </p>
+
+
+
+
+
+
+                  <div className="
+                    flex
+                    items-center
+                    gap-3
+                    mt-2
+                  ">
+
+
+
+                    <button
+
+                      onClick={() =>
+                        decreaseQuantity(item.id)
+                      }
+
+                      className="
+                        w-8
+                        h-8
+                        rounded-full
+                        bg-gray-200
+                      "
+
+                    >
+
+                      -
+
+                    </button>
+
+
+
+
+                    <span>
+
+                      {item.quantity}
+
+                    </span>
+
+
+
+
+                    <button
+
+                      onClick={() =>
+                        increaseQuantity(item.id)
+                      }
+
+                      className="
+                        w-8
+                        h-8
+                        rounded-full
+                        bg-orange-500
+                        text-white
+                      "
+
+                    >
+
+                      +
+
+                    </button>
+
+
+
+
+                    <button
+
+                      onClick={() =>
+                        removeFromCart(item.id)
+                      }
+
+                      className="
+                        ml-auto
+                        text-red-500
+                      "
+
+                    >
+
+                      🗑️
+
+                    </button>
+
+
+
+
+                  </div>
+
+
+
+                </div>
+
+
+
+
+
+              </div>
+
+
+
+            ))
+
+          }
+
+
+
+
+        </div>
+
+
+
+
+
+
+
+        {/* FOOTER */}
+
+
+        <div className="
+          absolute
+          bottom-0
+          w-full
+          bg-white
+          border-t
+          p-5
+        ">
+
+
+
+          <div className="
+            flex
+            justify-between
+            text-xl
+            font-bold
+            mb-4
+          ">
+
+            <span>
+              Total
+            </span>
+
+
+            <span className="text-orange-500">
+
+              £{total.toFixed(2)}
+
+            </span>
+
+
+          </div>
+
+
+
+
+
+
+
+          {
+            cart.length > 0 && (
+
+              <button
+
+                onClick={() => {
+
+                  closeCart();
+
+                  navigate("/checkout");
+
+                }}
+
+                className="
+                  w-full
+                  bg-orange-500
+                  text-white
+                  py-3
+                  rounded-full
+                  font-bold
+                  hover:bg-orange-600
+                "
+
+              >
+
+                Checkout 🚚
+
+
+              </button>
+
+            )
+          }
+
+
+
+
+
+        </div>
+
+
+
+
+
+      </div>
+
+
+
+    </>
 
   );
 
-
 }
-
 
 
 export default Cart;
