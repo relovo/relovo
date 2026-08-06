@@ -11,6 +11,7 @@ import Checkout from "./pages/Checkout";
 import Orders from "./pages/Orders";
 import Profile from "./pages/Profile";
 import Register from "./pages/Register";
+import Login from "./pages/Login";
 
 
 
@@ -18,7 +19,6 @@ function App() {
 
 
   const [cart, setCart] = useState([]);
-
 
 
 
@@ -76,9 +76,7 @@ function App() {
 
       return [
 
-
         ...currentCart,
-
 
         {
 
@@ -99,9 +97,7 @@ function App() {
 
           quantity: 1,
 
-
         }
-
 
       ];
 
@@ -112,7 +108,6 @@ function App() {
 
 
   }
-
 
 
 
@@ -146,7 +141,6 @@ function App() {
 
 
 
-
   function increaseQuantity(id) {
 
 
@@ -158,9 +152,7 @@ function App() {
 
         item.id === id
 
-
         ?
-
 
         {
 
@@ -168,15 +160,11 @@ function App() {
 
           quantity: item.quantity + 1,
 
-
         }
-
 
         :
 
-
         item
-
 
 
       )
@@ -194,7 +182,6 @@ function App() {
 
 
 
-
   function decreaseQuantity(id) {
 
 
@@ -203,15 +190,12 @@ function App() {
 
       currentCart
 
-
       .map((item) =>
 
 
         item.id === id
 
-
         ?
-
 
         {
 
@@ -219,15 +203,11 @@ function App() {
 
           quantity: item.quantity - 1,
 
-
         }
-
 
         :
 
-
         item
-
 
 
       )
@@ -251,7 +231,6 @@ function App() {
 
 
 
-
   const cartItems = cart.reduce(
 
     (total, item) =>
@@ -261,7 +240,6 @@ function App() {
     0
 
   );
-
 
 
 
@@ -311,7 +289,6 @@ function App() {
 
 
 
-
         <Route
 
           path="/checkout"
@@ -327,7 +304,6 @@ function App() {
           }
 
         />
-
 
 
 
@@ -351,7 +327,6 @@ function App() {
 
 
 
-
         <Route
 
           path="/profile"
@@ -363,7 +338,6 @@ function App() {
           }
 
         />
-
 
 
 
@@ -382,6 +356,22 @@ function App() {
 
         />
 
+
+
+
+
+
+        <Route
+
+          path="/login"
+
+          element={
+
+            <Login />
+
+          }
+
+        />
 
 
 
