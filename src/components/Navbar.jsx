@@ -1,73 +1,43 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-
 import { supabase } from "../services/supabaseClient";
-
 
 
 function Navbar({ cartItems, openCart }) {
 
-
   const navigate = useNavigate();
 
-
   const [user, setUser] = useState(null);
-
   const [profile, setProfile] = useState(null);
-
-
-
 
 
 
   useEffect(() => {
 
-
-    checkUser();
-
+    getUser();
 
 
     const {
-
-      data: {
-
-        subscription,
-
-      },
-
-
+      data: listener
     } = supabase.auth.onAuthStateChange(
-
       (_event, session) => {
-
 
         setUser(session?.user || null);
 
 
         if (session?.user) {
-
           loadProfile(session.user.id);
-
-        }
-
-        else {
-
+        } else {
           setProfile(null);
-
         }
-
 
       }
-
     );
-
 
 
     return () => {
 
-
-      subscription.unsubscribe();
-
+      listener.subscription.unsubscribe();
 
     };
 
@@ -78,19 +48,11 @@ function Navbar({ cartItems, openCart }) {
 
 
 
-
-
-
-
-  async function checkUser() {
-
+  async function getUser() {
 
     const {
-
-      data,
-
+      data
     } = await supabase.auth.getSession();
-
 
 
     const currentUser = data.session?.user || null;
@@ -102,12 +64,9 @@ function Navbar({ cartItems, openCart }) {
 
     if (currentUser) {
 
-
       loadProfile(currentUser.id);
 
-
     }
-
 
   }
 
@@ -115,45 +74,32 @@ function Navbar({ cartItems, openCart }) {
 
 
 
-
-
-
-
-  async function loadProfile(id) {
+  async function loadProfile(userId) {
 
 
     const {
-
       data,
-
-      error,
-
+      error
     } = await supabase
-
-      .from("profiles")
-
+      .from("Profiles")
       .select("*")
-
-      .eq("id", id)
-
+      .eq("email", user?.email)
       .single();
 
 
 
-    if (!error) {
+    if (error) {
 
+      console.log(error);
 
-      setProfile(data);
-
+      return;
 
     }
 
 
+    setProfile(data);
+
   }
-
-
-
-
 
 
 
@@ -167,18 +113,13 @@ function Navbar({ cartItems, openCart }) {
 
     navigate("/login");
 
-
   }
 
 
 
 
 
-
-
-
   return (
-
 
     <nav
       className="
@@ -190,7 +131,6 @@ function Navbar({ cartItems, openCart }) {
         z-50
       "
     >
-
 
 
       <div
@@ -207,7 +147,7 @@ function Navbar({ cartItems, openCart }) {
 
 
 
-
+        {/* LOGO */}
 
         <Link
           to="/"
@@ -225,9 +165,7 @@ function Navbar({ cartItems, openCart }) {
 
 
 
-
-
-
+        {/* MENU */}
 
         <div
           className="
@@ -239,124 +177,97 @@ function Navbar({ cartItems, openCart }) {
 
 
 
-
-
           <Link
             to="/"
-            className="
-              hover:text-orange-100
-            "
+            className="hover:text-orange-100"
           >
-
             Home
-
           </Link>
-
-
-
 
 
 
           <Link
             to="/orders"
-            className="
-              hover:text-orange-100
-            "
+            className="hover:text-orange-100"
           >
-
             Orders
-
           </Link>
 
 
 
+          <Link
+            to="/profile"
+            className="hover:text-orange-100"
+          >
+            Profile
+          </Link>
 
 
 
 
 
           {
-            user ?
+            user ? (
+
+              <>
+
+                <span className="font-semibold">
+
+                  👋 {profile?.first_name || "User"}
+
+                </span>
 
 
-            <>
+                <button
 
-              <Link
-                to="/profile"
-                className="
-                  hover:text-orange-100
-                "
-              >
+                  onClick={logout}
 
-                👋 
-                {
-                  profile?.name || "Profile"
-                }
+                  className="
+                    bg-white
+                    text-orange-500
+                    px-3
+                    py-2
+                    rounded-full
+                    font-semibold
+                  "
 
-              </Link>
+                >
 
+                  Logout
 
-
-
-
-              <button
-
-                onClick={logout}
-
-                className="
-                  hover:text-orange-100
-                "
-
-              >
-
-                Logout
-
-              </button>
+                </button>
 
 
-            </>
+              </>
 
 
-            :
+            ) : (
+
+              <>
+
+                <Link
+                  to="/login"
+                  className="hover:text-orange-100"
+                >
+
+                  Login
+
+                </Link>
 
 
-            <>
+                <Link
+                  to="/register"
+                  className="hover:text-orange-100"
+                >
 
-              <Link
+                  Register
 
-                to="/login"
-
-                className="
-                  hover:text-orange-100
-                "
-
-              >
-
-                Login
-
-              </Link>
+                </Link>
 
 
+              </>
 
-
-
-              <Link
-
-                to="/register"
-
-                className="
-                  hover:text-orange-100
-                "
-
-              >
-
-                Register
-
-              </Link>
-
-
-            </>
-
+            )
 
           }
 
@@ -365,8 +276,7 @@ function Navbar({ cartItems, openCart }) {
 
 
 
-
-
+          {/* CART */}
 
           <button
 
@@ -380,19 +290,14 @@ function Navbar({ cartItems, openCart }) {
               rounded-full
               font-semibold
               hover:bg-orange-100
-              transition
             "
 
           >
 
             🛒
 
-
             {
-
-              cartItems > 0 &&
-
-              (
+              cartItems > 0 && (
 
                 <span className="ml-2">
 
@@ -401,13 +306,10 @@ function Navbar({ cartItems, openCart }) {
                 </span>
 
               )
-
             }
 
 
           </button>
-
-
 
 
 
@@ -419,15 +321,11 @@ function Navbar({ cartItems, openCart }) {
       </div>
 
 
-
     </nav>
-
 
   );
 
-
 }
-
 
 
 export default Navbar;
