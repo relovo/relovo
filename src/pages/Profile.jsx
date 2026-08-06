@@ -1,407 +1,226 @@
+import { useEffect, useState } from "react";
+import { supabase } from "../services/supabaseClient";
+
+
 function Profile() {
+
+  const [user, setUser] = useState(null);
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+
+  useEffect(() => {
+
+    loadProfile();
+
+  }, []);
+
+
+
+
+  async function loadProfile() {
+
+
+    const {
+      data: sessionData
+    } = await supabase.auth.getSession();
+
+
+
+    const currentUser = sessionData.session?.user;
+
+
+
+    console.log("AUTH USER:", currentUser);
+
+
+
+    if (!currentUser) {
+
+      setLoading(false);
+      return;
+
+    }
+
+
+
+    setUser(currentUser);
+
+
+
+
+    const {
+      data,
+      error
+    } = await supabase
+
+      .from("Profiles")
+
+      .select("*")
+
+      .eq("email", currentUser.email)
+      .maybeSingle();
+
+
+
+
+
+    console.log("PROFILE DATA:", data);
+    console.log("PROFILE ERROR:", error);
+
+
+
+
+    if (data) {
+
+      setProfile(data);
+
+    }
+
+
+
+    setLoading(false);
+
+
+  }
+
+
+
+
+
+  if (loading) {
+
+    return (
+
+      <div style={{padding:"30px"}}>
+        Loading profile...
+      </div>
+
+    );
+
+  }
+
+
+
 
 
   return (
 
+    <div
 
-    <div className="
-      min-h-screen
-      bg-gray-50
-      py-10
-      px-4
-    ">
+      style={{
 
+        maxWidth:"800px",
+        margin:"40px auto",
+        padding:"20px"
 
-      <div className="
-        max-w-4xl
-        mx-auto
-      ">
+      }}
 
+    >
 
 
-        <h1 className="
-          text-3xl
-          font-bold
-          mb-8
-        ">
+      <h1>
+        👤 My Profile
+      </h1>
 
-          👤 My Profile
 
-        </h1>
 
 
+      <div
 
+        style={{
 
+          background:"white",
+          border:"1px solid #ddd",
+          borderRadius:"15px",
+          padding:"25px",
+          marginTop:"20px"
 
+        }}
 
+      >
 
 
-        <div className="
-          bg-white
-          rounded-2xl
-          shadow-sm
-          p-6
-          mb-6
-        ">
+        <h2>
 
+          👤{" "}
 
-          <div className="
-            flex
-            items-center
-            gap-5
-          ">
+          {
 
+            profile
 
+            ?
 
-            <div className="
-              w-20
-              h-20
-              rounded-full
-              bg-orange-500
-              text-white
-              flex
-              items-center
-              justify-center
-              text-3xl
-              font-bold
-            ">
+            `${profile.first_name} ${profile.last_name}`
 
-              👤
+            :
 
-            </div>
+            "Guest User"
 
+          }
 
+        </h2>
 
 
 
-            <div>
-
-
-              <h2 className="
-                text-2xl
-                font-bold
-              ">
-
-                Guest User
-
-              </h2>
-
-
-
-              <p className="
-                text-gray-500
-              ">
-
-                Welcome to Relovo 🚚
-
-              </p>
-
-
-
-            </div>
-
-
-
-          </div>
-
-
-
-        </div>
-
-
-
-
-
-
-
-
-
-        <div className="
-          grid
-          grid-cols-1
-          md:grid-cols-3
-          gap-4
-          mb-6
-        ">
-
-
-
-          <div className="
-            bg-white
-            rounded-xl
-            p-5
-            shadow-sm
-          ">
-
-            <p className="text-gray-500">
-
-              📦 Orders
-
-            </p>
-
-
-            <h3 className="
-              text-2xl
-              font-bold
-            ">
-
-              0
-
-            </h3>
-
-
-          </div>
-
-
-
-
-
-
-
-          <div className="
-            bg-white
-            rounded-xl
-            p-5
-            shadow-sm
-          ">
-
-            <p className="text-gray-500">
-
-              💷 Total spent
-
-            </p>
-
-
-            <h3 className="
-              text-2xl
-              font-bold
-            ">
-
-              £0.00
-
-            </h3>
-
-
-          </div>
-
-
-
-
-
-
-
-          <div className="
-            bg-white
-            rounded-xl
-            p-5
-            shadow-sm
-          ">
-
-            <p className="text-gray-500">
-
-              ⭐ Points
-
-            </p>
-
-
-            <h3 className="
-              text-2xl
-              font-bold
-            ">
-
-              0
-
-            </h3>
-
-
-          </div>
-
-
-
-        </div>
-
-
-
-
-
-
-
-
-
-        <div className="
-          bg-white
-          rounded-2xl
-          shadow-sm
-          p-6
-          mb-6
-        ">
-
-
-
-          <h2 className="
-            text-xl
-            font-bold
-            mb-4
-          ">
-
-            Personal Information
-
-          </h2>
-
-
-
-
-
-          <div className="
-            space-y-3
-            text-gray-700
-          ">
-
-
-            <p>
-
-              📧 Email:
-              {" "}
-              Not connected
-
-            </p>
-
-
-
-            <p>
-
-              📱 Phone:
-              {" "}
-              -
-
-            </p>
-
-
-
-
-            <p>
-
-              📍 Default Address:
-              {" "}
-              -
-
-            </p>
-
-
-
-          </div>
-
-
-
-        </div>
-
-
-
-
-
-
-
-
-
-        <div className="
-          bg-white
-          rounded-2xl
-          shadow-sm
-          p-6
-        ">
-
-
-
-          <h2 className="
-            text-xl
-            font-bold
-            mb-4
-          ">
-
-            Account Features
-
-          </h2>
-
-
-
-
-
-          <div className="
-            space-y-4
-          ">
-
-
-            <div>
-
-              📍 Saved Addresses
-
-            </div>
-
-
-
-            <div>
-
-              ❤️ Favourite Products
-
-            </div>
-
-
-
-            <div>
-
-              💳 Payment Methods
-
-            </div>
-
-
-
-            <div>
-
-              🔔 Notifications
-
-            </div>
-
-
-
-            <div>
-
-              🎁 Loyalty Points
-
-            </div>
-
-
-
-            <div>
-
-              ⚙️ Account Settings
-
-            </div>
-
-
-
-          </div>
-
-
-
-
-        </div>
-
-
-
+        <p>
+          Welcome to Relovo 🚚
+        </p>
 
 
 
       </div>
 
 
-    </div>
 
+
+
+      <div
+
+        style={{
+
+          background:"white",
+          border:"1px solid #ddd",
+          borderRadius:"15px",
+          padding:"25px",
+          marginTop:"20px"
+
+        }}
+
+      >
+
+
+        <h2>
+          Personal Information
+        </h2>
+
+
+        <p>
+          📧 Email: {user?.email || "-"}
+        </p>
+
+
+        <p>
+          📱 Phone: {profile?.phone || "-"}
+        </p>
+
+
+        <p>
+          👤 Role: {profile?.role || "customer"}
+        </p>
+
+
+
+      </div>
+
+
+
+
+    </div>
 
   );
 
-
 }
-
 
 
 export default Profile;
