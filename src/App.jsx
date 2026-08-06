@@ -1,17 +1,19 @@
 import { useState } from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 
-import "./App.css";
 
 import Navbar from "./components/Navbar";
-import Cart from "./components/Cart";
+import CartDrawer from "./components/CartDrawer";
+
 
 import Home from "./pages/Home";
-import Checkout from "./pages/Checkout";
-import Orders from "./pages/Orders";
-import Profile from "./pages/Profile";
-import Register from "./pages/Register";
 import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Profile from "./pages/Profile";
+import Orders from "./pages/Orders";
+import Checkout from "./pages/Checkout";
+import Addresses from "./pages/Addresses";
+
 
 
 
@@ -20,34 +22,35 @@ function App() {
 
   const [cart, setCart] = useState([]);
 
+  const [cartOpen, setCartOpen] = useState(false);
 
 
 
-  function addToCart(product) {
-
-
-    const productId = Number(product.id);
 
 
 
-    setCart((currentCart) => {
+  function addToCart(product){
 
 
-      const existingProduct = currentCart.find(
 
-        (item) => item.id === productId
+    setCart(prev => {
+
+
+      const existing = prev.find(
+
+        item => item.id === product.id
 
       );
 
 
 
-      if (existingProduct) {
+      if(existing){
 
 
-        return currentCart.map((item) =>
+        return prev.map(item =>
 
 
-          item.id === productId
+          item.id === product.id
 
           ?
 
@@ -55,7 +58,7 @@ function App() {
 
             ...item,
 
-            quantity: item.quantity + 1,
+            quantity:item.quantity + 1
 
           }
 
@@ -73,34 +76,20 @@ function App() {
 
 
 
-
       return [
 
-        ...currentCart,
+        ...prev,
 
         {
 
-          id: productId,
+          ...product,
 
-          name: product.name,
-
-          price: Number(product.price),
-
-          image:
-            product.image ||
-            product.image_url ||
-            "",
-
-          store_id: product.store_id,
-
-          category_id: product.category_id,
-
-          quantity: 1,
+          quantity:1
 
         }
 
-      ];
 
+      ];
 
 
     });
@@ -115,19 +104,16 @@ function App() {
 
 
 
-
-  function removeFromCart(id) {
-
-
-    setCart((currentCart) =>
+  function removeFromCart(id){
 
 
-      currentCart.filter(
+    setCart(prev =>
 
-        (item) => item.id !== id
+      prev.filter(
+
+        item => item.id !== id
 
       )
-
 
     );
 
@@ -141,13 +127,27 @@ function App() {
 
 
 
-  function increaseQuantity(id) {
+
+  function updateQuantity(id, quantity){
 
 
-    setCart((currentCart) =>
+
+    if(quantity <= 0){
+
+      removeFromCart(id);
+
+      return;
+
+    }
 
 
-      currentCart.map((item) =>
+
+
+
+    setCart(prev =>
+
+
+      prev.map(item =>
 
 
         item.id === id
@@ -158,7 +158,7 @@ function App() {
 
           ...item,
 
-          quantity: item.quantity + 1,
+          quantity
 
         }
 
@@ -182,64 +182,14 @@ function App() {
 
 
 
-  function decreaseQuantity(id) {
+
+  function clearCart(){
 
 
-    setCart((currentCart) =>
-
-
-      currentCart
-
-      .map((item) =>
-
-
-        item.id === id
-
-        ?
-
-        {
-
-          ...item,
-
-          quantity: item.quantity - 1,
-
-        }
-
-        :
-
-        item
-
-
-      )
-
-
-      .filter(
-
-        (item) => item.quantity > 0
-
-      )
-
-
-    );
-
+    setCart([]);
 
   }
 
-
-
-
-
-
-
-  const cartItems = cart.reduce(
-
-    (total, item) =>
-
-      total + item.quantity,
-
-    0
-
-  );
 
 
 
@@ -251,14 +201,47 @@ function App() {
   return (
 
 
-    <BrowserRouter>
+    <>
 
 
       <Navbar
 
-        cartItems={cartItems}
+
+        cartItems={cart.length}
+
+
+        openCart={() => setCartOpen(true)}
+
 
       />
+
+
+
+
+
+
+      <CartDrawer
+
+
+        open={cartOpen}
+
+
+        closeCart={() => setCartOpen(false)}
+
+
+        cart={cart}
+
+
+        removeFromCart={removeFromCart}
+
+
+        updateQuantity={updateQuantity}
+
+
+      />
+
+
+
 
 
 
@@ -268,7 +251,10 @@ function App() {
 
 
 
+
+
         <Route
+
 
           path="/"
 
@@ -282,6 +268,23 @@ function App() {
 
           }
 
+
+        />
+
+
+
+
+
+
+
+        <Route
+
+
+          path="/login"
+
+          element={<Login />}
+
+
         />
 
 
@@ -290,6 +293,55 @@ function App() {
 
 
         <Route
+
+
+          path="/register"
+
+          element={<Register />}
+
+
+        />
+
+
+
+
+
+
+
+        <Route
+
+
+          path="/profile"
+
+          element={<Profile />}
+
+
+        />
+
+
+
+
+
+
+
+        <Route
+
+
+          path="/orders"
+
+          element={<Orders />}
+
+
+        />
+
+
+
+
+
+
+
+        <Route
+
 
           path="/checkout"
 
@@ -299,11 +351,17 @@ function App() {
 
               cart={cart}
 
+              clearCart={clearCart}
+
+
             />
 
           }
 
+
         />
+
+
 
 
 
@@ -312,66 +370,17 @@ function App() {
 
         <Route
 
-          path="/orders"
 
-          element={
+          path="/addresses"
 
-            <Orders />
+          element={<Addresses />}
 
-          }
 
         />
 
 
 
 
-
-
-        <Route
-
-          path="/profile"
-
-          element={
-
-            <Profile />
-
-          }
-
-        />
-
-
-
-
-
-
-        <Route
-
-          path="/register"
-
-          element={
-
-            <Register />
-
-          }
-
-        />
-
-
-
-
-
-
-        <Route
-
-          path="/login"
-
-          element={
-
-            <Login />
-
-          }
-
-        />
 
 
 
@@ -382,32 +391,7 @@ function App() {
 
 
 
-
-
-
-      <Cart
-
-
-        cart={cart}
-
-
-        removeFromCart={removeFromCart}
-
-
-        increaseQuantity={increaseQuantity}
-
-
-        decreaseQuantity={decreaseQuantity}
-
-
-
-      />
-
-
-
-
-
-    </BrowserRouter>
+    </>
 
 
   );
