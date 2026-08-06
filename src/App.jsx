@@ -11,115 +11,330 @@ import Checkout from "./pages/Checkout";
 import Orders from "./pages/Orders";
 import Profile from "./pages/Profile";
 
+
 function App() {
+
+
   const [cart, setCart] = useState([]);
 
-  // Add product to cart
+  const [cartOpen, setCartOpen] = useState(false);
+
+
+
+
   function addToCart(product) {
+
+
     const productId = Number(product.id);
 
+
     setCart((currentCart) => {
+
+
       const existingProduct = currentCart.find(
-        (item) => item.id === productId
+
+        item => item.id === productId
+
       );
 
+
+
       if (existingProduct) {
-        return currentCart.map((item) =>
+
+
+        return currentCart.map(item =>
+
           item.id === productId
+
             ? {
+
                 ...item,
-                quantity: item.quantity + 1,
+
+                quantity: item.quantity + 1
+
               }
+
             : item
+
         );
+
+
       }
 
+
+
       return [
+
         ...currentCart,
+
         {
+
           id: productId,
+
           name: product.name,
+
           price: Number(product.price),
-          image: product.image || product.image_url || "",
+
+          image:
+            product.image ||
+            product.image_url ||
+            "",
+
           store_id: product.store_id,
+
           category_id: product.category_id,
+
           quantity: 1,
-        },
+
+        }
+
       ];
+
+
     });
+
+
   }
 
-  // Remove product
+
+
+
+
+
   function removeFromCart(id) {
-    setCart((currentCart) =>
-      currentCart.filter((item) => item.id !== id)
-    );
-  }
 
-  // Increase quantity
-  function increaseQuantity(id) {
-    setCart((currentCart) =>
-      currentCart.map((item) =>
-        item.id === id
-          ? {
-              ...item,
-              quantity: item.quantity + 1,
-            }
-          : item
+
+    setCart(currentCart =>
+
+      currentCart.filter(
+
+        item => item.id !== id
+
       )
+
     );
+
+
   }
 
-  // Decrease quantity
-  function decreaseQuantity(id) {
-    setCart((currentCart) =>
-      currentCart
-        .map((item) =>
-          item.id === id
-            ? {
-                ...item,
-                quantity: item.quantity - 1,
-              }
-            : item
-        )
-        .filter((item) => item.quantity > 0)
+
+
+
+
+
+  function increaseQuantity(id) {
+
+
+    setCart(currentCart =>
+
+      currentCart.map(item =>
+
+        item.id === id
+
+          ?
+
+          {
+
+            ...item,
+
+            quantity: item.quantity + 1
+
+          }
+
+          :
+
+          item
+
+      )
+
     );
+
+
   }
+
+
+
+
+
+
+  function decreaseQuantity(id) {
+
+
+    setCart(currentCart =>
+
+
+      currentCart
+
+        .map(item =>
+
+
+          item.id === id
+
+            ?
+
+            {
+
+              ...item,
+
+              quantity: item.quantity - 1
+
+            }
+
+            :
+
+            item
+
+
+        )
+
+        .filter(item => item.quantity > 0)
+
+
+    );
+
+
+  }
+
+
+
+
+
+
+
+  const cartItems = cart.reduce(
+
+    (total, item) =>
+
+      total + item.quantity,
+
+    0
+
+  );
+
+
+
+
+
+
+
 
   return (
+
     <BrowserRouter>
-      <Navbar />
+
+
+      <Navbar
+
+        cartItems={cartItems}
+
+        openCart={() => setCartOpen(true)}
+
+      />
+
+
+
+
 
       <Routes>
+
+
         <Route
+
           path="/"
-          element={<Home addToCart={addToCart} />}
+
+          element={
+
+            <Home
+
+              addToCart={addToCart}
+
+            />
+
+          }
+
         />
 
+
+
+
         <Route
+
           path="/checkout"
-          element={<Checkout cart={cart} />}
+
+          element={
+
+            <Checkout
+
+              cart={cart}
+
+            />
+
+          }
+
         />
 
+
+
+
         <Route
+
           path="/orders"
-          element={<Orders />}
+
+          element={
+
+            <Orders />
+
+          }
+
         />
 
+
+
+
         <Route
+
           path="/profile"
-          element={<Profile />}
+
+          element={
+
+            <Profile />
+
+          }
+
         />
+
+
+
       </Routes>
 
+
+
+
+
       <Cart
+
         cart={cart}
+
+        open={cartOpen}
+
+        closeCart={() => setCartOpen(false)}
+
         removeFromCart={removeFromCart}
+
         increaseQuantity={increaseQuantity}
+
         decreaseQuantity={decreaseQuantity}
+
       />
+
+
+
     </BrowserRouter>
+
   );
+
+
 }
+
 
 export default App;
