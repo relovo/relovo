@@ -4,9 +4,14 @@ import { supabase } from "../services/supabaseClient";
 
 function Profile() {
 
+
   const [user, setUser] = useState(null);
+
   const [profile, setProfile] = useState(null);
+
   const [loading, setLoading] = useState(true);
+
+
 
 
 
@@ -19,12 +24,32 @@ function Profile() {
 
 
 
+
+
   async function loadProfile() {
 
 
     const {
-      data
+      data,
+      error
     } = await supabase.auth.getUser();
+
+
+
+
+
+    if (error) {
+
+      console.log(error);
+
+      setLoading(false);
+
+      return;
+
+    }
+
+
+
 
 
 
@@ -32,34 +57,29 @@ function Profile() {
 
 
 
-    console.log("USER:", currentUser);
+
+
+    console.log("AUTH USER:", currentUser);
+
+
 
 
 
     if (!currentUser) {
 
       setLoading(false);
+
       return;
 
     }
 
 
 
+
+
     setUser(currentUser);
 
 
-
-    const email =
-
-      currentUser.email ||
-
-      currentUser.user_metadata?.email ||
-
-      currentUser.identities?.[0]?.identity_data?.email;
-
-
-
-    console.log("SEARCH EMAIL:", email);
 
 
 
@@ -69,15 +89,19 @@ function Profile() {
 
       data: profileData,
 
-      error
+      error: profileError
 
     } = await supabase
 
+
       .from("Profiles")
+
 
       .select("*")
 
-      .eq("email", email)
+
+      .eq("user_id", currentUser.id)
+
 
       .maybeSingle();
 
@@ -85,17 +109,30 @@ function Profile() {
 
 
 
-    console.log("PROFILE:", profileData);
-
-    console.log("ERROR:", error);
 
 
+    console.log("PROFILE DATA:", profileData);
+
+    console.log("PROFILE ERROR:", profileError);
 
 
 
-    setProfile(profileData);
+
+
+
+
+    if (profileData) {
+
+      setProfile(profileData);
+
+    }
+
+
+
+
 
     setLoading(false);
+
 
 
   }
@@ -106,11 +143,22 @@ function Profile() {
 
 
 
+
+
   if (loading) {
+
 
     return (
 
-      <div style={{padding:"30px"}}>
+      <div
+
+        style={{
+
+          padding:"30px"
+
+        }}
+
+      >
 
         Loading profile...
 
@@ -125,7 +173,11 @@ function Profile() {
 
 
 
+
+
+
   return (
+
 
     <div
 
@@ -143,11 +195,17 @@ function Profile() {
 
 
 
+
+
       <h1>
 
         👤 My Profile
 
       </h1>
+
+
+
+
 
 
 
@@ -163,7 +221,9 @@ function Profile() {
 
           borderRadius:"15px",
 
-          padding:"25px"
+          padding:"25px",
+
+          marginTop:"20px"
 
         }}
 
@@ -171,27 +231,30 @@ function Profile() {
 
 
 
+
+
         <h2>
 
-          👤
-
-          {" "}
+          👤{" "}
 
           {
 
-          profile
+            profile
 
-          ?
+            ?
 
-          `${profile.first_name} ${profile.last_name}`
+            `${profile.first_name} ${profile.last_name}`
 
-          :
+            :
 
-          "Guest User"
+            "Guest User"
 
           }
 
+
         </h2>
+
+
 
 
 
@@ -204,15 +267,63 @@ function Profile() {
 
 
 
+
+      </div>
+
+
+
+
+
+
+
+
+
+      <div
+
+        style={{
+
+          background:"white",
+
+          border:"1px solid #ddd",
+
+          borderRadius:"15px",
+
+          padding:"25px",
+
+          marginTop:"20px"
+
+        }}
+
+      >
+
+
+
+
+
+        <h2>
+
+          Personal Information
+
+        </h2>
+
+
+
+
+
+
+
         <p>
 
           📧 Email:
 
           {" "}
 
-          {user?.email}
+          {user?.email || "-"}
 
         </p>
+
+
+
 
 
 
@@ -230,6 +341,9 @@ function Profile() {
 
 
 
+
+
+
         <p>
 
           👤 Role:
@@ -243,15 +357,79 @@ function Profile() {
 
 
 
+
+
+
       </div>
+
+
+
+
+
+
+
+
+
+      <div
+
+        style={{
+
+          background:"white",
+
+          border:"1px solid #ddd",
+
+          borderRadius:"15px",
+
+          padding:"25px",
+
+          marginTop:"20px"
+
+        }}
+
+      >
+
+
+
+
+
+        <h2>
+
+          📦 Orders
+
+        </h2>
+
+
+
+
+
+        <p>
+
+          Your orders will appear here.
+
+        </p>
+
+
+
+
+
+      </div>
+
+
+
+
 
 
 
     </div>
 
+
   );
 
+
 }
+
+
+
 
 
 export default Profile;
