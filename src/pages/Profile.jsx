@@ -4,13 +4,23 @@ import { supabase } from "../services/supabaseClient";
 
 function Profile() {
 
-
   const [user, setUser] = useState(null);
-
   const [profile, setProfile] = useState(null);
+
+  const [addresses, setAddresses] = useState([]);
 
   const [loading, setLoading] = useState(true);
 
+
+  const [newAddress, setNewAddress] = useState({
+
+    label: "Home",
+    address_line: "",
+    city: "",
+    postcode: "",
+    instructions: ""
+
+  });
 
 
 
@@ -25,31 +35,12 @@ function Profile() {
 
 
 
-
   async function loadProfile() {
 
 
     const {
-      data,
-      error
+      data
     } = await supabase.auth.getUser();
-
-
-
-
-
-    if (error) {
-
-      console.log(error);
-
-      setLoading(false);
-
-      return;
-
-    }
-
-
-
 
 
 
@@ -57,23 +48,12 @@ function Profile() {
 
 
 
-
-
-    console.log("AUTH USER:", currentUser);
-
-
-
-
-
     if (!currentUser) {
 
       setLoading(false);
-
       return;
 
     }
-
-
 
 
 
@@ -82,38 +62,54 @@ function Profile() {
 
 
 
-
-
-
     const {
-
-      data: profileData,
-
-      error: profileError
-
+      data: profileData
     } = await supabase
-
 
       .from("Profiles")
 
-
       .select("*")
 
-
       .eq("user_id", currentUser.id)
-
 
       .maybeSingle();
 
 
 
+    setProfile(profileData);
 
 
 
 
-    console.log("PROFILE DATA:", profileData);
+    const {
+      data: addressData,
+      error
+    } = await supabase
 
-    console.log("PROFILE ERROR:", profileError);
+      .from("addresses")
+
+      .select("*")
+
+      .eq("user_id", currentUser.id)
+
+      .order("created_at", {
+        ascending:false
+      });
+
+
+
+    if(error){
+
+      console.log(error);
+
+    }
+
+
+    setAddresses(addressData || []);
+
+    setLoading(false);
+
+  }
 
 
 
@@ -121,18 +117,68 @@ function Profile() {
 
 
 
-    if (profileData) {
+  async function addAddress(){
 
-      setProfile(profileData);
+
+    if(
+      !newAddress.address_line ||
+      !newAddress.city ||
+      !newAddress.postcode
+    ){
+
+      alert("Complete address fields");
+
+      return;
 
     }
 
 
 
+    const {
+      error
+    } = await supabase
+
+      .from("addresses")
+
+      .insert([
+
+        {
+
+          user_id:user.id,
+
+          ...newAddress
+
+        }
+
+      ]);
 
 
-    setLoading(false);
 
+    if(error){
+
+      console.log(error);
+
+      alert(error.message);
+
+      return;
+
+    }
+
+
+
+    setNewAddress({
+
+      label:"Home",
+      address_line:"",
+      city:"",
+      postcode:"",
+      instructions:""
+
+    });
+
+
+
+    loadProfile();
 
 
   }
@@ -143,22 +189,11 @@ function Profile() {
 
 
 
-
-
-  if (loading) {
-
+  if(loading){
 
     return (
 
-      <div
-
-        style={{
-
-          padding:"30px"
-
-        }}
-
-      >
+      <div style={{padding:"30px"}}>
 
         Loading profile...
 
@@ -173,11 +208,7 @@ function Profile() {
 
 
 
-
-
-
   return (
-
 
     <div
 
@@ -195,8 +226,6 @@ function Profile() {
 
 
 
-
-
       <h1>
 
         👤 My Profile
@@ -207,213 +236,282 @@ function Profile() {
 
 
 
+      <div className="card">
+
+        <h2>
+
+          👤 {profile
+
+          ?
+
+          `${profile.first_name} ${profile.last_name}`
+
+          :
+
+          "Guest User"}
+
+        </h2>
+
+
+        <p>
+
+          📧 {user?.email}
+
+        </p>
+
+
+        <p>
+
+          📱 {profile?.phone || "-"}
+
+        </p>
+
+
+        <p>
+
+          👤 Role: {profile?.role || "customer"}
+
+        </p>
+
+      </div>
 
 
 
 
-      <div
 
-        style={{
 
-          background:"white",
+      <div className="card">
 
-          border:"1px solid #ddd",
+        <h2>
 
-          borderRadius:"15px",
+          📍 My Addresses
 
-          padding:"25px",
-
-          marginTop:"20px"
-
-        }}
-
-      >
+        </h2>
 
 
 
+        {
+
+          addresses.length === 0
+
+          ?
+
+          <p>
+
+            No saved addresses
+
+          </p>
+
+          :
+
+          addresses.map(address=>(
+
+
+            <div
+
+              key={address.id}
+
+              style={{
+
+                borderBottom:"1px solid #ddd",
+
+                padding:"10px 0"
+
+              }}
+
+            >
+
+              <strong>
+
+                🏠 {address.label}
+
+              </strong>
+
+
+              <p>
+
+                {address.address_line}
+
+              </p>
+
+
+              <p>
+
+                {address.city}
+
+                {" "}
+
+                {address.postcode}
+
+              </p>
+
+
+              {
+
+                address.instructions &&
+
+                <small>
+
+                  📝 {address.instructions}
+
+                </small>
+
+              }
+
+
+            </div>
+
+
+          ))
+
+        }
+
+
+
+      </div>
+
+
+
+
+
+
+
+
+      <div className="card">
 
 
         <h2>
 
-          👤{" "}
+          ➕ Add Address
 
-          {
+        </h2>
 
-            profile
 
-            ?
 
-            `${profile.first_name} ${profile.last_name}`
 
-            :
+        <input
 
-            "Guest User"
+          placeholder="Label"
+
+          value={newAddress.label}
+
+          onChange={(e)=>
+
+            setNewAddress({
+
+              ...newAddress,
+
+              label:e.target.value
+
+            })
 
           }
 
-
-        </h2>
-
+        />
 
 
 
+        <input
 
-        <p>
+          placeholder="Address"
 
-          Welcome to Relovo 🚚
+          value={newAddress.address_line}
 
-        </p>
+          onChange={(e)=>
+
+            setNewAddress({
+
+              ...newAddress,
+
+              address_line:e.target.value
+
+            })
+
+          }
+
+        />
 
 
 
+        <input
+
+          placeholder="City"
+
+          value={newAddress.city}
+
+          onChange={(e)=>
+
+            setNewAddress({
+
+              ...newAddress,
+
+              city:e.target.value
+
+            })
+
+          }
+
+        />
+
+
+
+        <input
+
+          placeholder="Postcode"
+
+          value={newAddress.postcode}
+
+          onChange={(e)=>
+
+            setNewAddress({
+
+              ...newAddress,
+
+              postcode:e.target.value
+
+            })
+
+          }
+
+        />
+
+
+
+        <input
+
+          placeholder="Instructions"
+
+          value={newAddress.instructions}
+
+          onChange={(e)=>
+
+            setNewAddress({
+
+              ...newAddress,
+
+              instructions:e.target.value
+
+            })
+
+          }
+
+        />
+
+
+
+
+        <button
+
+          onClick={addAddress}
+
+        >
+
+          Save Address 📍
+
+        </button>
 
 
       </div>
-
-
-
-
-
-
-
-
-
-      <div
-
-        style={{
-
-          background:"white",
-
-          border:"1px solid #ddd",
-
-          borderRadius:"15px",
-
-          padding:"25px",
-
-          marginTop:"20px"
-
-        }}
-
-      >
-
-
-
-
-
-        <h2>
-
-          Personal Information
-
-        </h2>
-
-
-
-
-
-
-
-        <p>
-
-          📧 Email:
-
-          {" "}
-
-          {user?.email || "-"}
-
-        </p>
-
-
-
-
-
-
-
-        <p>
-
-          📱 Phone:
-
-          {" "}
-
-          {profile?.phone || "-"}
-
-        </p>
-
-
-
-
-
-
-
-        <p>
-
-          👤 Role:
-
-          {" "}
-
-          {profile?.role || "customer"}
-
-        </p>
-
-
-
-
-
-
-
-      </div>
-
-
-
-
-
-
-
-
-
-      <div
-
-        style={{
-
-          background:"white",
-
-          border:"1px solid #ddd",
-
-          borderRadius:"15px",
-
-          padding:"25px",
-
-          marginTop:"20px"
-
-        }}
-
-      >
-
-
-
-
-
-        <h2>
-
-          📦 Orders
-
-        </h2>
-
-
-
-
-
-        <p>
-
-          Your orders will appear here.
-
-        </p>
-
-
-
-
-
-      </div>
-
 
 
 
@@ -422,13 +520,10 @@ function Profile() {
 
     </div>
 
-
   );
 
 
 }
-
-
 
 
 
