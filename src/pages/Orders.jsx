@@ -13,14 +13,11 @@ function Orders() {
 
 
 
-
-
   useEffect(() => {
 
     loadOrders();
 
   }, []);
-
 
 
 
@@ -42,7 +39,13 @@ function Orders() {
 
       .from("orders")
 
-      .select("*")
+      .select(`
+
+        *,
+
+        order_items (*)
+
+      `)
 
       .order(
 
@@ -65,6 +68,8 @@ function Orders() {
     if(error){
 
       console.log(error);
+
+      alert(error.message);
 
     }
 
@@ -89,34 +94,36 @@ function Orders() {
 
 
 
-  function statusStyle(status){
+  function statusColor(status){
 
 
-    if(status === "delivered"){
+    switch(status){
 
-      return "bg-green-100 text-green-700";
+
+      case "delivered":
+
+        return "bg-green-100 text-green-700";
+
+
+
+      case "preparing":
+
+        return "bg-blue-100 text-blue-700";
+
+
+
+      case "out_for_delivery":
+
+        return "bg-purple-100 text-purple-700";
+
+
+
+      default:
+
+        return "bg-yellow-100 text-yellow-700";
+
 
     }
-
-
-
-    if(status === "preparing"){
-
-      return "bg-blue-100 text-blue-700";
-
-    }
-
-
-
-    if(status === "out_for_delivery"){
-
-      return "bg-purple-100 text-purple-700";
-
-    }
-
-
-
-    return "bg-yellow-100 text-yellow-700";
 
 
   }
@@ -135,15 +142,11 @@ function Orders() {
     return (
 
       <div className="
-        min-h-screen
-        flex
-        items-center
-        justify-center
+        p-10
+        text-center
       ">
 
-
         Loading orders...
-
 
       </div>
 
@@ -151,6 +154,7 @@ function Orders() {
 
 
   }
+
 
 
 
@@ -180,16 +184,13 @@ function Orders() {
 
 
 
-
         <h1 className="
           text-3xl
           font-bold
           mb-8
         ">
 
-
           📦 My Orders
-
 
         </h1>
 
@@ -200,32 +201,27 @@ function Orders() {
 
 
         {
+
           orders.length === 0 && (
 
 
             <div className="
               bg-white
-              rounded-xl
               p-8
+              rounded-xl
               text-center
             ">
 
 
-              <p className="
-                text-gray-500
-              ">
-
-
-                No orders found
-
-
-              </p>
+              No orders found
 
 
             </div>
 
 
           )
+
+
         }
 
 
@@ -237,6 +233,7 @@ function Orders() {
 
 
         {
+
           orders.map(order => (
 
 
@@ -248,12 +245,14 @@ function Orders() {
               className="
                 bg-white
                 rounded-2xl
-                shadow-sm
+                shadow
                 p-6
-                mb-5
+                mb-6
               "
 
             >
+
+
 
 
 
@@ -263,15 +262,13 @@ function Orders() {
                 flex
                 justify-between
                 items-center
-                mb-4
+                mb-5
               ">
-
-
 
 
                 <h2 className="
                   font-bold
-                  text-lg
+                  text-xl
                 ">
 
 
@@ -284,14 +281,13 @@ function Orders() {
 
 
 
-
                 <span className={`
                   px-3
                   py-1
                   rounded-full
                   text-sm
-                  font-semibold
-                  ${statusStyle(order.status)}
+                  font-bold
+                  ${statusColor(order.status)}
                 `}>
 
 
@@ -300,6 +296,123 @@ function Orders() {
 
                 </span>
 
+
+
+              </div>
+
+
+
+
+
+
+
+
+
+
+              <h3 className="
+                font-bold
+                mb-3
+              ">
+
+                🛒 Products
+
+              </h3>
+
+
+
+
+
+
+
+              <div className="
+                space-y-3
+                mb-5
+              ">
+
+
+
+                {
+
+
+                  order.order_items?.map(item => (
+
+
+
+                    <div
+
+                      key={item.id}
+
+                      className="
+                        flex
+                        justify-between
+                        border-b
+                        pb-2
+                      "
+
+                    >
+
+
+
+
+                      <div>
+
+
+                        <p className="font-semibold">
+
+
+                          {item.product_name}
+
+
+                        </p>
+
+
+
+                        <p className="
+                          text-gray-500
+                        ">
+
+
+                          Quantity: {item.quantity}
+
+
+                        </p>
+
+
+
+                      </div>
+
+
+
+
+
+
+                      <p className="font-bold">
+
+
+                        £{(
+
+                          item.price *
+
+                          item.quantity
+
+                        ).toFixed(2)}
+
+
+
+                      </p>
+
+
+
+
+
+                    </div>
+
+
+                  ))
+
+
+
+                }
 
 
 
@@ -319,33 +432,19 @@ function Orders() {
               ">
 
 
-
                 <p>
 
-                  🕒 Delivery slot:
-
-                  {" "}
-
-                  {order.delivery_slot}
-
+                  📍 {order.customer_address}
 
                 </p>
 
 
 
-
                 <p>
 
-                  📍 Address:
-
-                  {" "}
-
-                  {order.customer_address}
-
+                  🕒 {order.delivery_slot}
 
                 </p>
-
-
 
 
 
@@ -355,16 +454,22 @@ function Orders() {
 
                   {" "}
 
-                  {new Date(order.created_at)
-                    .toLocaleDateString()
+                  {
+
+                    new Date(
+
+                      order.created_at
+
+                    ).toLocaleDateString()
+
                   }
 
 
                 </p>
 
 
-
               </div>
+
 
 
 
@@ -380,9 +485,7 @@ function Orders() {
                 pt-4
                 flex
                 justify-between
-                items-center
               ">
-
 
 
                 <span className="
@@ -400,8 +503,8 @@ function Orders() {
 
 
                 <span className="
-                  font-bold
                   text-orange-500
+                  font-bold
                   text-xl
                 ">
 
@@ -413,8 +516,8 @@ function Orders() {
 
 
 
-
               </div>
+
 
 
 
@@ -423,11 +526,11 @@ function Orders() {
             </div>
 
 
+
           ))
 
+
         }
-
-
 
 
 
