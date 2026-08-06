@@ -25,14 +25,9 @@ function Checkout({ cart, clearCart }) {
 
 
 
-
-
-
   useEffect(() => {
 
-
-    loadData();
-
+    loadCheckout();
 
   }, []);
 
@@ -42,8 +37,7 @@ function Checkout({ cart, clearCart }) {
 
 
 
-
-  async function loadData() {
+  async function loadCheckout(){
 
 
     const {
@@ -57,11 +51,7 @@ function Checkout({ cart, clearCart }) {
 
 
 
-    setUser(currentUser);
-
-
-
-    if (!currentUser) {
+    if(!currentUser){
 
       navigate("/login");
 
@@ -71,18 +61,27 @@ function Checkout({ cart, clearCart }) {
 
 
 
+    setUser(currentUser);
+
+
+
 
 
     const {
       data,
       error
     } = await supabase
+
       .from("addresses")
+
       .select("*")
+
       .eq(
         "user_id",
         currentUser.id
       );
+
+
 
 
 
@@ -93,6 +92,8 @@ function Checkout({ cart, clearCart }) {
       return;
 
     }
+
+
 
 
 
@@ -108,6 +109,8 @@ function Checkout({ cart, clearCart }) {
 
 
   }
+
+
 
 
 
@@ -141,10 +144,11 @@ function Checkout({ cart, clearCart }) {
   async function placeOrder(){
 
 
+
     if(!selectedAddress){
 
       alert(
-        "Please select an address"
+        "Please select a delivery address"
       );
 
       return;
@@ -172,7 +176,8 @@ function Checkout({ cart, clearCart }) {
 
 
 
-    const addressText =
+
+    const customerAddress =
 
       `${selectedAddress.address_line}, ${selectedAddress.city}, ${selectedAddress.postcode}`;
 
@@ -183,30 +188,36 @@ function Checkout({ cart, clearCart }) {
 
 
 
+
     const {
-      data: order,
-      error: orderError
+
+      data:order,
+
+      error:orderError
 
     } = await supabase
 
+
       .from("orders")
+
 
       .insert({
 
         user_id:user.id,
 
-        customer_address:addressText,
+        customer_address:customerAddress,
 
         delivery_slot:deliverySlot,
 
-        total:total,
+        total:Number(total.toFixed(2)),
 
         status:"Pending"
 
-
       })
 
+
       .select()
+
 
       .single();
 
@@ -221,9 +232,7 @@ function Checkout({ cart, clearCart }) {
 
       console.log(orderError);
 
-      alert(
-        "Order creation failed"
-      );
+      alert(orderError.message);
 
       setLoading(false);
 
@@ -238,7 +247,8 @@ function Checkout({ cart, clearCart }) {
 
 
 
-    const items = cart.map(item => ({
+    const orderItems = cart.map(item => ({
+
 
       order_id:order.id,
 
@@ -259,14 +269,18 @@ function Checkout({ cart, clearCart }) {
 
 
 
+
     const {
+
       error:itemError
 
     } = await supabase
 
+
       .from("order_items")
 
-      .insert(items);
+
+      .insert(orderItems);
 
 
 
@@ -278,9 +292,7 @@ function Checkout({ cart, clearCart }) {
 
       console.log(itemError);
 
-      alert(
-        "Products could not be saved"
-      );
+      alert(itemError.message);
 
       setLoading(false);
 
@@ -293,8 +305,8 @@ function Checkout({ cart, clearCart }) {
 
 
 
-    clearCart();
 
+    clearCart();
 
 
     navigate("/orders");
@@ -311,16 +323,31 @@ function Checkout({ cart, clearCart }) {
 
 
 
+
+
+
   return (
 
-    <div className="min-h-screen bg-gray-50 p-6">
+
+    <div className="
+      min-h-screen
+      bg-gray-50
+      p-6
+    ">
 
 
-      <div className="max-w-5xl mx-auto">
+      <div className="
+        max-w-5xl
+        mx-auto
+      ">
 
 
 
-        <h1 className="text-3xl font-bold mb-6">
+        <h1 className="
+          text-3xl
+          font-bold
+          mb-6
+        ">
 
           Checkout 🛒
 
@@ -332,10 +359,22 @@ function Checkout({ cart, clearCart }) {
 
 
 
-        <div className="bg-white rounded-xl shadow p-6 mb-6">
+
+        <div className="
+          bg-white
+          rounded-xl
+          shadow
+          p-6
+          mb-6
+        ">
 
 
-          <h2 className="text-xl font-bold mb-4">
+
+          <h2 className="
+            text-xl
+            font-bold
+            mb-4
+          ">
 
             Delivery Address 📍
 
@@ -365,6 +404,7 @@ function Checkout({ cart, clearCart }) {
               >
 
 
+
                 <input
 
                   type="radio"
@@ -385,20 +425,25 @@ function Checkout({ cart, clearCart }) {
 
 
                   <b>
+
                     {address.label}
+
                   </b>
 
 
                   <br />
-
 
                   {address.address_line}
 
 
                   <br />
 
+                  {address.city}
 
-                  {address.city} {address.postcode}
+                  {" "}
+
+                  {address.postcode}
+
 
 
                 </span>
@@ -412,15 +457,20 @@ function Checkout({ cart, clearCart }) {
 
 
 
+
           {
-            addresses.length === 0 &&
+            addresses.length === 0 && (
 
-            <p>
-              No addresses found.
-              Add one in your profile.
-            </p>
+              <p>
 
+                No saved addresses.
+                Add one in your profile.
+
+              </p>
+
+            )
           }
+
 
 
         </div>
@@ -433,14 +483,26 @@ function Checkout({ cart, clearCart }) {
 
 
 
-        <div className="bg-white rounded-xl shadow p-6 mb-6">
+        <div className="
+          bg-white
+          rounded-xl
+          shadow
+          p-6
+          mb-6
+        ">
 
 
-          <h2 className="text-xl font-bold mb-4">
 
-            Delivery Slot 🚚
+          <h2 className="
+            text-xl
+            font-bold
+            mb-4
+          ">
+
+            Delivery Time 🚚
 
           </h2>
+
 
 
 
@@ -465,11 +527,9 @@ function Checkout({ cart, clearCart }) {
               Today 18:00 - 20:00
             </option>
 
-
             <option>
               Tomorrow 10:00 - 12:00
             </option>
-
 
             <option>
               Tomorrow 14:00 - 16:00
@@ -490,14 +550,26 @@ function Checkout({ cart, clearCart }) {
 
 
 
-        <div className="bg-white rounded-xl shadow p-6">
+        <div className="
+          bg-white
+          rounded-xl
+          shadow
+          p-6
+        ">
 
 
-          <h2 className="text-xl font-bold mb-4">
+
+          <h2 className="
+            text-xl
+            font-bold
+            mb-4
+          ">
 
             Order Summary
 
           </h2>
+
+
 
 
 
@@ -518,14 +590,16 @@ function Checkout({ cart, clearCart }) {
 
               >
 
-
                 <span>
 
                   {item.name}
 
-                  x {item.quantity}
+                  x
+
+                  {item.quantity}
 
                 </span>
+
 
 
                 <span>
@@ -537,10 +611,10 @@ function Checkout({ cart, clearCart }) {
                       item.quantity
 
                     ).toFixed(2)
-
                   }
 
                 </span>
+
 
 
               </div>
@@ -553,15 +627,19 @@ function Checkout({ cart, clearCart }) {
 
 
 
-          <div className="text-xl font-bold mt-5">
 
+          <div className="
+            text-xl
+            font-bold
+            mt-5
+          ">
 
             Total:
 
             £{total.toFixed(2)}
 
-
           </div>
+
 
 
 
@@ -589,14 +667,20 @@ function Checkout({ cart, clearCart }) {
 
             {
               loading
+
               ?
+
               "Creating order..."
+
               :
+
               "Place Order 🚚"
+
             }
 
 
           </button>
+
 
 
 
@@ -612,7 +696,6 @@ function Checkout({ cart, clearCart }) {
 
 
   );
-
 
 }
 
