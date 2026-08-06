@@ -1,17 +1,23 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "../services/supabaseClient";
 
 
-function Checkout({ cart }) {
+function Checkout({ cart, clearCart }) {
+
+
+  const navigate = useNavigate();
 
 
   const [user, setUser] = useState(null);
 
   const [addresses, setAddresses] = useState([]);
 
-  const [selectedAddress, setSelectedAddress] = useState("");
+  const [selectedAddress, setSelectedAddress] = useState(null);
 
-  const [slot, setSlot] = useState("");
+  const [deliverySlot, setDeliverySlot] = useState(
+    "Today 18:00 - 20:00"
+  );
 
   const [loading, setLoading] = useState(false);
 
@@ -21,9 +27,12 @@ function Checkout({ cart }) {
 
 
 
+
   useEffect(() => {
 
-    loadAddresses();
+
+    loadData();
+
 
   }, []);
 
@@ -34,16 +43,17 @@ function Checkout({ cart }) {
 
 
 
-  async function loadAddresses() {
+  async function loadData() {
 
 
     const {
-      data
-    } = await supabase.auth.getUser();
+      data: sessionData
+    } = await supabase.auth.getSession();
 
 
 
-    const currentUser = data.user;
+    const currentUser =
+      sessionData.session?.user;
 
 
 
@@ -51,8 +61,9 @@ function Checkout({ cart }) {
 
 
 
+    if (!currentUser) {
 
-    if(!currentUser){
+      navigate("/login");
 
       return;
 
@@ -62,31 +73,16 @@ function Checkout({ cart }) {
 
 
 
-
     const {
-
-      data: addressData,
-
+      data,
       error
-
     } = await supabase
-
-
       .from("addresses")
-
-
       .select("*")
-
-
-      .eq("user_id", currentUser.id)
-
-      .order("created_at", {
-
-        ascending:false
-
-      });
-
-
+      .eq(
+        "user_id",
+        currentUser.id
+      );
 
 
 
@@ -94,17 +90,24 @@ function Checkout({ cart }) {
 
       console.log(error);
 
+      return;
+
     }
 
 
 
+    setAddresses(data || []);
 
-    setAddresses(addressData || []);
 
+
+    if(data && data.length > 0){
+
+      setSelectedAddress(data[0]);
+
+    }
 
 
   }
-
 
 
 
@@ -135,15 +138,14 @@ function Checkout({ cart }) {
 
 
 
-
-
   async function placeOrder(){
-
 
 
     if(!selectedAddress){
 
-      alert("Please select delivery address");
+      alert(
+        "Please select an address"
+      );
 
       return;
 
@@ -151,30 +153,15 @@ function Checkout({ cart }) {
 
 
 
+    if(cart.length === 0){
 
-
-    if(!slot){
-
-      alert("Please select delivery slot");
-
-      return;
-
-    }
-
-
-
-
-
-    if(cart.length===0){
-
-      alert("Your cart is empty");
+      alert(
+        "Your cart is empty"
+      );
 
       return;
 
     }
-
-
-
 
 
 
@@ -185,14 +172,9 @@ function Checkout({ cart }) {
 
 
 
-    const address = addresses.find(
+    const addressText =
 
-      item =>
-
-      item.id === Number(selectedAddress)
-
-    );
-
+      `${selectedAddress.address_line}, ${selectedAddress.city}, ${selectedAddress.postcode}`;
 
 
 
@@ -202,42 +184,32 @@ function Checkout({ cart }) {
 
 
     const {
-
-      data:order,
-
-      error:orderError
+      data: order,
+      error: orderError
 
     } = await supabase
 
-
       .from("orders")
 
+      .insert({
 
-      .insert([
+        user_id:user.id,
 
-        {
+        customer_address:addressText,
 
-          user_id:user.id,
+        delivery_slot:deliverySlot,
 
-          customer_address:
+        total:total,
 
-          `${address.address_line}, ${address.city}, ${address.postcode}`,
+        status:"Pending"
 
-          delivery_slot:slot,
 
-          total:total,
-
-          status:"pending"
-
-        }
-
-      ])
-
+      })
 
       .select()
 
-
       .single();
+
 
 
 
@@ -249,7 +221,9 @@ function Checkout({ cart }) {
 
       console.log(orderError);
 
-      alert(orderError.message);
+      alert(
+        "Order creation failed"
+      );
 
       setLoading(false);
 
@@ -264,24 +238,20 @@ function Checkout({ cart }) {
 
 
 
+    const items = cart.map(item => ({
 
-    const items = cart.map(item=>(
+      order_id:order.id,
 
-      {
+      product_id:item.id,
 
-        order_id:order.id,
+      product_name:item.name,
 
-        product_id:Number(item.id),
+      quantity:item.quantity,
 
-        product_name:item.name,
+      price:item.price
 
-        quantity:item.quantity,
 
-        price:Number(item.price)
-
-      }
-
-    ));
+    }));
 
 
 
@@ -290,14 +260,11 @@ function Checkout({ cart }) {
 
 
     const {
-
-      error:itemsError
+      error:itemError
 
     } = await supabase
 
-
       .from("order_items")
-
 
       .insert(items);
 
@@ -306,11 +273,14 @@ function Checkout({ cart }) {
 
 
 
-    if(itemsError){
 
-      console.log(itemsError);
+    if(itemError){
 
-      alert(itemsError.message);
+      console.log(itemError);
+
+      alert(
+        "Products could not be saved"
+      );
 
       setLoading(false);
 
@@ -322,11 +292,12 @@ function Checkout({ cart }) {
 
 
 
-    alert("Order confirmed 🚚");
+
+    clearCart();
 
 
 
-    setLoading(false);
+    navigate("/orders");
 
 
 
@@ -342,28 +313,18 @@ function Checkout({ cart }) {
 
   return (
 
-    <div
+    <div className="min-h-screen bg-gray-50 p-6">
 
-      style={{
 
-        padding:"30px",
-
-        maxWidth:"700px",
-
-        margin:"auto"
-
-      }}
-
-    >
+      <div className="max-w-5xl mx-auto">
 
 
 
+        <h1 className="text-3xl font-bold mb-6">
 
-      <h1>
+          Checkout 🛒
 
-        🛒 Checkout
-
-      </h1>
+        </h1>
 
 
 
@@ -371,294 +332,289 @@ function Checkout({ cart }) {
 
 
 
-      <h2>
-
-        📍 Delivery Address
-
-      </h2>
+        <div className="bg-white rounded-xl shadow p-6 mb-6">
 
 
+          <h2 className="text-xl font-bold mb-4">
+
+            Delivery Address 📍
+
+          </h2>
 
 
 
 
-      {
 
-        addresses.length === 0
-
-        ?
-
-        <p>
-
-          No saved addresses. Go to Profile and add one.
-
-        </p>
+          {
+            addresses.map(address => (
 
 
-        :
+              <label
+
+                key={address.id}
+
+                className="
+                  block
+                  border
+                  rounded-lg
+                  p-4
+                  mb-3
+                  cursor-pointer
+                "
+
+              >
 
 
-        addresses.map(address=>(
+                <input
+
+                  type="radio"
+
+                  checked={
+                    selectedAddress?.id === address.id
+                  }
+
+                  onChange={() =>
+                    setSelectedAddress(address)
+                  }
+
+                />
 
 
-          <div
 
-            key={address.id}
+                <span className="ml-3">
 
-            style={{
 
-              border:"1px solid #ddd",
+                  <b>
+                    {address.label}
+                  </b>
 
-              padding:"15px",
 
-              borderRadius:"12px",
+                  <br />
 
-              marginBottom:"10px"
 
-            }}
+                  {address.address_line}
+
+
+                  <br />
+
+
+                  {address.city} {address.postcode}
+
+
+                </span>
+
+
+              </label>
+
+
+            ))
+          }
+
+
+
+          {
+            addresses.length === 0 &&
+
+            <p>
+              No addresses found.
+              Add one in your profile.
+            </p>
+
+          }
+
+
+        </div>
+
+
+
+
+
+
+
+
+
+        <div className="bg-white rounded-xl shadow p-6 mb-6">
+
+
+          <h2 className="text-xl font-bold mb-4">
+
+            Delivery Slot 🚚
+
+          </h2>
+
+
+
+          <select
+
+            value={deliverySlot}
+
+            onChange={
+              e=>setDeliverySlot(e.target.value)
+            }
+
+            className="
+              border
+              rounded
+              p-3
+              w-full
+            "
 
           >
 
+            <option>
+              Today 18:00 - 20:00
+            </option>
 
-            <label>
+
+            <option>
+              Tomorrow 10:00 - 12:00
+            </option>
 
 
-              <input
+            <option>
+              Tomorrow 14:00 - 16:00
+            </option>
 
-                type="radio"
 
-                name="address"
-
-                value={address.id}
-
-                onChange={(e)=>
-
-                  setSelectedAddress(e.target.value)
-
-                }
-
-              />
+          </select>
 
 
 
-              {" "}
-
-
-              🏠 {address.label}
-
-
-              <br/>
-
-
-              {address.address_line}
-
-
-              <br/>
-
-
-              {address.city}
-
-              {" "}
-
-              {address.postcode}
+        </div>
 
 
 
-            </label>
 
+
+
+
+
+
+        <div className="bg-white rounded-xl shadow p-6">
+
+
+          <h2 className="text-xl font-bold mb-4">
+
+            Order Summary
+
+          </h2>
+
+
+
+          {
+            cart.map(item => (
+
+
+              <div
+
+                key={item.id}
+
+                className="
+                  flex
+                  justify-between
+                  border-b
+                  py-3
+                "
+
+              >
+
+
+                <span>
+
+                  {item.name}
+
+                  x {item.quantity}
+
+                </span>
+
+
+                <span>
+
+                  £
+                  {
+                    (
+                      item.price *
+                      item.quantity
+
+                    ).toFixed(2)
+
+                  }
+
+                </span>
+
+
+              </div>
+
+
+            ))
+          }
+
+
+
+
+
+          <div className="text-xl font-bold mt-5">
+
+
+            Total:
+
+            £{total.toFixed(2)}
 
 
           </div>
 
 
-        ))
 
-      }
 
 
 
+          <button
 
+            onClick={placeOrder}
 
+            disabled={loading}
 
+            className="
+              mt-6
+              bg-orange-500
+              text-white
+              px-6
+              py-3
+              rounded-full
+              font-bold
+              w-full
+            "
 
+          >
 
-      <h2>
+            {
+              loading
+              ?
+              "Creating order..."
+              :
+              "Place Order 🚚"
+            }
 
-        🚚 Delivery Slot
 
-      </h2>
+          </button>
 
 
 
+        </div>
 
 
-      <select
 
-        value={slot}
 
-        onChange={(e)=>
-
-          setSlot(e.target.value)
-
-        }
-
-        style={{
-
-          width:"100%",
-
-          padding:"12px"
-
-        }}
-
-      >
-
-
-        <option value="">
-
-          Select time
-
-        </option>
-
-
-        <option>
-
-          09:00 - 11:00
-
-        </option>
-
-
-        <option>
-
-          11:00 - 13:00
-
-        </option>
-
-
-        <option>
-
-          18:00 - 20:00
-
-        </option>
-
-
-      </select>
-
-
-
-
-
-
-
-      <h2>
-
-        Your Order
-
-      </h2>
-
-
-
-
-
-      {
-
-        cart.map(item=>(
-
-
-          <p key={item.id}>
-
-
-            {item.name}
-
-            {" x "}
-
-            {item.quantity}
-
-            {" - £"}
-
-            {(item.price * item.quantity).toFixed(2)}
-
-
-          </p>
-
-
-        ))
-
-      }
-
-
-
-
-
-
-
-      <h2>
-
-        Total: £{total.toFixed(2)}
-
-      </h2>
-
-
-
-
-
-
-
-      <button
-
-        onClick={placeOrder}
-
-        disabled={loading}
-
-        style={{
-
-          width:"100%",
-
-          padding:"15px",
-
-          background:"#ff8c00",
-
-          color:"white",
-
-          border:"none",
-
-          borderRadius:"10px",
-
-          fontSize:"16px"
-
-        }}
-
-      >
-
-
-        {
-
-          loading
-
-          ?
-
-          "Processing..."
-
-          :
-
-          "Confirm Order 🚚"
-
-        }
-
-
-      </button>
-
-
-
-
+      </div>
 
 
     </div>
+
 
   );
 
 
 }
-
 
 
 export default Checkout;
