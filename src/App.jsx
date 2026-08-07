@@ -1,10 +1,8 @@
 import { useState } from "react";
 import { Routes, Route } from "react-router-dom";
 
-
 import Navbar from "./components/Navbar";
 import Cart from "./components/Cart";
-
 
 import Home from "./pages/Home";
 import Login from "./pages/Login";
@@ -13,64 +11,37 @@ import Profile from "./pages/Profile";
 import Orders from "./pages/Orders";
 import Checkout from "./pages/Checkout";
 import Addresses from "./pages/Addresses";
-
-
+import Admin from "./pages/Admin";
 
 function App() {
 
-
   const [cart, setCart] = useState([]);
-
   const [cartOpen, setCartOpen] = useState(false);
-
-
-
-
-
-
 
   function addToCart(product) {
 
-
     setCart((currentCart) => {
 
-
       const existing = currentCart.find(
-
         item => item.id === product.id
-
       );
-
-
 
       if (existing) {
 
-
         return currentCart.map(item =>
-
 
           item.id === product.id
 
-          ?
+            ? {
+                ...item,
+                quantity: item.quantity + 1
+              }
 
-          {
-            ...item,
-            quantity: item.quantity + 1
-          }
-
-          :
-
-          item
-
+            : item
 
         );
 
-
       }
-
-
-
-
 
       return [
 
@@ -83,22 +54,11 @@ function App() {
 
       ];
 
-
     });
-
 
   }
 
-
-
-
-
-
-
-
-
   function removeFromCart(id) {
-
 
     setCart(currentCart =>
 
@@ -110,22 +70,11 @@ function App() {
 
     );
 
-
   }
-
-
-
-
-
-
-
-
 
   function updateQuantity(id, quantity) {
 
-
     if (quantity <= 0) {
-
 
       removeFromCart(id);
 
@@ -133,67 +82,34 @@ function App() {
 
     }
 
-
-
-
     setCart(currentCart =>
-
 
       currentCart.map(item =>
 
-
         item.id === id
 
-        ?
+          ? {
+              ...item,
+              quantity
+            }
 
-        {
-          ...item,
-          quantity
-        }
-
-        :
-
-        item
-
+          : item
 
       )
 
-
     );
 
-
   }
-
-
-
-
-
-
-
-
 
   function clearCart() {
 
-
     setCart([]);
-
 
   }
 
-
-
-
-
-
-
-
-
-
   return (
 
-
     <>
-
 
       <Navbar
 
@@ -203,13 +119,7 @@ function App() {
 
       />
 
-
-
-
-
-
       <Cart
-
 
         open={cartOpen}
 
@@ -223,18 +133,7 @@ function App() {
 
       />
 
-
-
-
-
-
-
-
       <Routes>
-
-
-
-
 
         <Route
 
@@ -252,12 +151,6 @@ function App() {
 
         />
 
-
-
-
-
-
-
         <Route
 
           path="/login"
@@ -265,12 +158,6 @@ function App() {
           element={<Login />}
 
         />
-
-
-
-
-
-
 
         <Route
 
@@ -280,12 +167,6 @@ function App() {
 
         />
 
-
-
-
-
-
-
         <Route
 
           path="/profile"
@@ -294,12 +175,6 @@ function App() {
 
         />
 
-
-
-
-
-
-
         <Route
 
           path="/orders"
@@ -307,12 +182,6 @@ function App() {
           element={<Orders />}
 
         />
-
-
-
-
-
-
 
         <Route
 
@@ -332,12 +201,6 @@ function App() {
 
         />
 
-
-
-
-
-
-
         <Route
 
           path="/addresses"
@@ -346,21 +209,20 @@ function App() {
 
         />
 
+        <Route
 
+          path="/admin"
 
+          element={<Admin />}
 
+        />
 
       </Routes>
-
-
 
     </>
 
   );
 
-
 }
-
-
 
 export default App;

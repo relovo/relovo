@@ -13,7 +13,6 @@ function Orders() {
 
 
 
-
   useEffect(() => {
 
     loadOrders();
@@ -26,38 +25,7 @@ function Orders() {
 
 
 
-
-
   async function loadOrders(){
-
-
-
-    const {
-
-      data:sessionData
-
-    } = await supabase.auth.getSession();
-
-
-
-
-    const user = sessionData.session?.user;
-
-
-
-    if(!user){
-
-      setLoading(false);
-
-      return;
-
-    }
-
-
-
-
-
-
 
 
     const {
@@ -71,23 +39,13 @@ function Orders() {
 
       .from("orders")
 
-
       .select(`
 
         *,
 
-        order_items (*)
+        order_items(*)
 
       `)
-
-
-      .eq(
-
-        "user_id",
-
-        user.id
-
-      )
 
 
       .order(
@@ -107,14 +65,13 @@ function Orders() {
 
 
 
-
     if(error){
 
       console.log(error);
 
+      alert(error.message);
+
     }
-
-
 
 
 
@@ -131,45 +88,32 @@ function Orders() {
 
 
 
-
-
   function statusStyle(status){
 
 
-    switch(status?.toLowerCase()){
+    switch(status){
 
 
-      case "delivered":
-
-        return "bg-green-100 text-green-700";
-
-
-
-      case "preparing":
+      case "Preparing":
 
         return "bg-blue-100 text-blue-700";
 
 
-
-      case "out_for_delivery":
-
-      case "out for delivery":
+      case "Out for delivery":
 
         return "bg-purple-100 text-purple-700";
 
 
+      case "Delivered":
 
-      case "pending":
+        return "bg-green-100 text-green-700";
+
+
+      default:
 
         return "bg-yellow-100 text-yellow-700";
 
 
-
-      default:
-
-        return "bg-gray-100 text-gray-700";
-
-
     }
 
 
@@ -181,41 +125,44 @@ function Orders() {
 
 
 
+  function timelineStatus(status){
 
 
-  function statusEmoji(status){
+    const steps = [
+
+      "Pending",
+
+      "Preparing",
+
+      "Out for delivery",
+
+      "Delivered"
+
+    ];
 
 
-    switch(status?.toLowerCase()){
+
+    const current = steps.indexOf(status);
 
 
-      case "delivered":
 
-        return "🟢";
-
-
-      case "preparing":
-
-        return "🔵";
+    return steps.map((step,index)=>(
 
 
-      case "out_for_delivery":
+      {
 
-      case "out for delivery":
+        name:step,
 
-        return "🚚";
+        done:index <= current
 
-
-      default:
-
-        return "🟠";
+      }
 
 
-    }
+    ));
+
 
 
   }
-
 
 
 
@@ -229,13 +176,17 @@ function Orders() {
 
     return (
 
-      <div className="p-10 text-center">
+      <div className="
+        p-10
+        text-center
+      ">
 
         Loading orders...
 
       </div>
 
     );
+
 
   }
 
@@ -245,10 +196,7 @@ function Orders() {
 
 
 
-
-
   return (
-
 
     <div className="
       min-h-screen
@@ -259,11 +207,9 @@ function Orders() {
 
 
       <div className="
-        max-w-4xl
+        max-w-5xl
         mx-auto
       ">
-
-
 
 
         <h1 className="
@@ -280,17 +226,12 @@ function Orders() {
 
 
 
-
-
-
-
         {
           orders.length === 0 && (
 
-
             <div className="
               bg-white
-              rounded-xl
+              rounded-2xl
               shadow
               p-8
               text-center
@@ -300,12 +241,8 @@ function Orders() {
 
             </div>
 
-
           )
         }
-
-
-
 
 
 
@@ -316,22 +253,19 @@ function Orders() {
           orders.map(order => (
 
 
-
             <div
 
               key={order.id}
 
               className="
                 bg-white
-                rounded-2xl
+                rounded-3xl
                 shadow
                 p-6
-                mb-6
+                mb-8
               "
 
             >
-
-
 
 
 
@@ -345,50 +279,172 @@ function Orders() {
               ">
 
 
+                <div>
 
-                <h2 className="
-                  text-xl
-                  font-bold
-                ">
+                  <h2 className="
+                    text-xl
+                    font-bold
+                  ">
+
+                    🚚 Order #{order.id.slice(0,8)}
+
+                  </h2>
 
 
-                  🚚 Order #{order.id.slice(0,8)}
+                  <p className="
+                    text-gray-500
+                    text-sm
+                  ">
+
+                    {
+                      new Date(
+                        order.created_at
+                      ).toLocaleDateString()
+
+                    }
+
+                  </p>
 
 
-                </h2>
-
-
+                </div>
 
 
 
 
 
                 <span className={`
-
-                  px-3
-
-                  py-1
-
+                  px-4
+                  py-2
                   rounded-full
-
-                  text-sm
-
                   font-bold
-
+                  text-sm
                   ${statusStyle(order.status)}
-
                 `}>
-
-
-                  {statusEmoji(order.status)}
-
-                  {" "}
 
                   {order.status}
 
-
                 </span>
 
+
+
+              </div>
+                            {/* TIMELINE */}
+
+
+              <div className="
+                mb-8
+              ">
+
+
+                <h3 className="
+                  font-bold
+                  mb-4
+                ">
+
+                  🚚 Order status
+
+                </h3>
+
+
+
+                <div className="
+                  flex
+                  flex-col
+                  gap-3
+                ">
+
+
+                  {
+                    timelineStatus(order.status)
+                    .map((step,index)=>(
+
+
+                      <div
+
+                        key={step.name}
+
+                        className="
+                          flex
+                          items-center
+                          gap-3
+                        "
+
+                      >
+
+
+                        <div className={`
+
+                          w-8
+                          h-8
+                          rounded-full
+                          flex
+                          items-center
+                          justify-center
+                          font-bold
+
+                          ${
+                            step.done
+
+                            ?
+
+                            "bg-orange-500 text-white"
+
+                            :
+
+                            "bg-gray-200 text-gray-400"
+
+                          }
+
+                        `}>
+
+                          {
+                            step.done
+                            ?
+                            "✓"
+                            :
+                            index + 1
+                          }
+
+
+                        </div>
+
+
+
+                        <span className={`
+                          font-semibold
+
+                          ${
+                            step.done
+
+                            ?
+
+                            "text-gray-800"
+
+                            :
+
+                            "text-gray-400"
+
+                          }
+
+                        `}>
+
+                          {step.name}
+
+
+                        </span>
+
+
+
+                      </div>
+
+
+                    ))
+
+                  }
+
+
+
+                </div>
 
 
 
@@ -399,6 +455,10 @@ function Orders() {
 
 
 
+
+
+
+              {/* PRODUCTS */}
 
 
 
@@ -415,16 +475,15 @@ function Orders() {
 
 
 
+              <div className="
+                space-y-3
+                mb-6
+              ">
 
-
-
-
-              <div className="space-y-3">
 
 
                 {
                   order.order_items?.map(item => (
-
 
 
                     <div
@@ -445,7 +504,9 @@ function Orders() {
                       <div>
 
 
-                        <p className="font-semibold">
+                        <p className="
+                          font-semibold
+                        ">
 
                           {item.product_name}
 
@@ -453,7 +514,9 @@ function Orders() {
 
 
 
-                        <p className="text-gray-500">
+                        <p className="
+                          text-gray-500
+                        ">
 
                           Quantity: {item.quantity}
 
@@ -466,21 +529,17 @@ function Orders() {
 
 
 
-
-                      <p className="font-bold">
+                      <p className="
+                        font-bold
+                      ">
 
 
                         £
                         {
-
                           (
-
                             item.price *
-
                             item.quantity
-
                           ).toFixed(2)
-
                         }
 
 
@@ -488,11 +547,11 @@ function Orders() {
 
 
 
-
                     </div>
 
 
                   ))
+
                 }
 
 
@@ -506,11 +565,16 @@ function Orders() {
 
 
 
+              {/* DELIVERY INFO */}
+
+
 
               <div className="
-                mt-6
+                bg-gray-50
+                rounded-xl
+                p-4
                 space-y-2
-                text-gray-600
+                mb-6
               ">
 
 
@@ -521,30 +585,39 @@ function Orders() {
                 </p>
 
 
+
+                {
+                  order.delivery_date && (
+
+                    <p>
+
+                      📅 Delivery date:
+
+                      {" "}
+
+                      {
+                        new Date(
+                          order.delivery_date
+                        ).toLocaleDateString(
+                          "en-GB"
+                        )
+                      }
+
+                    </p>
+
+                  )
+                }
+
+
+
+
+
                 <p>
 
-                  🕒 {order.delivery_slot}
+                  ⏰ {order.delivery_slot}
 
                 </p>
 
-
-
-                <p>
-
-                  📅
-
-                  {" "}
-
-                  {
-
-                    new Date(
-                      order.created_at
-                    ).toLocaleDateString()
-
-                  }
-
-
-                </p>
 
 
 
@@ -557,15 +630,17 @@ function Orders() {
 
 
 
+              {/* TOTAL */}
+
+
 
               <div className="
                 border-t
-                mt-5
-                pt-5
+                pt-4
                 flex
                 justify-between
+                items-center
               ">
-
 
 
                 <span className="
@@ -580,20 +655,18 @@ function Orders() {
 
 
 
-
                 <span className="
                   text-orange-500
                   font-bold
-                  text-xl
+                  text-2xl
                 ">
 
 
                   £
-
                   {
-
-                    Number(order.total)
-                    .toFixed(2)
+                    Number(
+                      order.total
+                    ).toFixed(2)
 
                   }
 
@@ -609,16 +682,12 @@ function Orders() {
 
 
 
-
             </div>
 
 
-
           ))
+
         }
-
-
-
 
 
 
@@ -633,6 +702,7 @@ function Orders() {
 
 
 }
+
 
 
 export default Orders;

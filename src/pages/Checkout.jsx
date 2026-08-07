@@ -15,11 +15,29 @@ function Checkout({ cart, clearCart }) {
 
   const [selectedAddress, setSelectedAddress] = useState(null);
 
-  const [deliverySlot, setDeliverySlot] = useState(
-    "Today 18:00 - 20:00"
-  );
+
+  const [selectedDate, setSelectedDate] = useState(null);
+
+  const [selectedSlot, setSelectedSlot] = useState(null);
+
 
   const [loading, setLoading] = useState(false);
+
+
+
+
+
+  const slots = [
+
+    "10:00 - 12:00",
+
+    "14:00 - 16:00",
+
+    "18:00 - 20:00"
+
+  ];
+
+
 
 
 
@@ -37,17 +55,25 @@ function Checkout({ cart, clearCart }) {
 
 
 
+
+
   async function loadCheckout(){
 
 
     const {
-      data: sessionData
+
+      data:sessionData
+
     } = await supabase.auth.getSession();
+
+
 
 
 
     const currentUser =
       sessionData.session?.user;
+
+
 
 
 
@@ -61,15 +87,21 @@ function Checkout({ cart, clearCart }) {
 
 
 
+
+
     setUser(currentUser);
 
 
 
 
 
+
     const {
+
       data,
+
       error
+
     } = await supabase
 
       .from("addresses")
@@ -77,9 +109,13 @@ function Checkout({ cart, clearCart }) {
       .select("*")
 
       .eq(
+
         "user_id",
+
         currentUser.id
+
       );
+
 
 
 
@@ -101,7 +137,9 @@ function Checkout({ cart, clearCart }) {
 
 
 
-    if(data && data.length > 0){
+
+
+    if(data?.length > 0){
 
       setSelectedAddress(data[0]);
 
@@ -118,8 +156,56 @@ function Checkout({ cart, clearCart }) {
 
 
 
+  function generateDates(){
+
+
+    const days = [];
+
+
+
+    for(let i = 0; i < 7; i++){
+
+
+      const date = new Date();
+
+
+      date.setDate(
+
+        date.getDate() + i
+
+      );
+
+
+      days.push(date);
+
+
+    }
+
+
+
+    return days;
+
+
+  }
+
+
+
+
+
+
+
+  const deliveryDates = generateDates();
+
+
+
+
+
+
+
+
 
   const total = cart.reduce(
+
 
     (sum,item)=>
 
@@ -129,7 +215,9 @@ function Checkout({ cart, clearCart }) {
 
       item.quantity,
 
+
     0
+
 
   );
 
@@ -144,11 +232,10 @@ function Checkout({ cart, clearCart }) {
   async function placeOrder(){
 
 
-
     if(!selectedAddress){
 
       alert(
-        "Please select a delivery address"
+        "Please select an address"
       );
 
       return;
@@ -157,10 +244,11 @@ function Checkout({ cart, clearCart }) {
 
 
 
-    if(cart.length === 0){
+
+    if(!selectedDate || !selectedSlot){
 
       alert(
-        "Your cart is empty"
+        "Please select delivery date and time"
       );
 
       return;
@@ -176,13 +264,25 @@ function Checkout({ cart, clearCart }) {
 
 
 
+    const deliveryDate = selectedDate
+
+      .toISOString()
+
+      .split("T")[0];
+
+
+
+
+
+    const deliverySlot = selectedSlot;
+
+
+
+
 
     const customerAddress =
 
       `${selectedAddress.address_line}, ${selectedAddress.city}, ${selectedAddress.postcode}`;
-
-
-
 
 
 
@@ -203,15 +303,24 @@ function Checkout({ cart, clearCart }) {
 
       .insert({
 
+
         user_id:user.id,
+
 
         customer_address:customerAddress,
 
+
+        delivery_date:deliveryDate,
+
+
         delivery_slot:deliverySlot,
+
 
         total:Number(total.toFixed(2)),
 
+
         status:"Pending"
+
 
       })
 
@@ -227,20 +336,22 @@ function Checkout({ cart, clearCart }) {
 
 
 
-
     if(orderError){
+
 
       console.log(orderError);
 
+
       alert(orderError.message);
+
 
       setLoading(false);
 
+
       return;
 
+
     }
-
-
 
 
 
@@ -250,19 +361,24 @@ function Checkout({ cart, clearCart }) {
     const orderItems = cart.map(item => ({
 
 
+
       order_id:order.id,
+
 
       product_id:item.id,
 
+
       product_name:item.name,
 
+
       quantity:item.quantity,
+
 
       price:item.price
 
 
-    }));
 
+    }));
 
 
 
@@ -290,17 +406,20 @@ function Checkout({ cart, clearCart }) {
 
     if(itemError){
 
+
       console.log(itemError);
+
 
       alert(itemError.message);
 
+
       setLoading(false);
+
 
       return;
 
+
     }
-
-
 
 
 
@@ -312,22 +431,8 @@ function Checkout({ cart, clearCart }) {
     navigate("/orders");
 
 
-
   }
-
-
-
-
-
-
-
-
-
-
-
-
-  return (
-
+    return (
 
     <div className="
       min-h-screen
@@ -342,11 +447,10 @@ function Checkout({ cart, clearCart }) {
       ">
 
 
-
         <h1 className="
           text-3xl
           font-bold
-          mb-6
+          mb-8
         ">
 
           Checkout 🛒
@@ -357,17 +461,16 @@ function Checkout({ cart, clearCart }) {
 
 
 
-
+        {/* ADDRESS */}
 
 
         <div className="
           bg-white
-          rounded-xl
+          rounded-2xl
           shadow
           p-6
           mb-6
         ">
-
 
 
           <h2 className="
@@ -376,10 +479,9 @@ function Checkout({ cart, clearCart }) {
             mb-4
           ">
 
-            Delivery Address 📍
+            📍 Delivery Address
 
           </h2>
-
 
 
 
@@ -388,55 +490,60 @@ function Checkout({ cart, clearCart }) {
             addresses.map(address => (
 
 
-              <label
+              <div
 
                 key={address.id}
 
-                className="
-                  block
+                onClick={() =>
+                  setSelectedAddress(address)
+                }
+
+                className={`
+
                   border
-                  rounded-lg
+
+                  rounded-xl
+
                   p-4
+
                   mb-3
+
                   cursor-pointer
-                "
+
+
+                  ${
+                    selectedAddress?.id === address.id
+
+                    ?
+
+                    "border-orange-500 bg-orange-50"
+
+                    :
+
+                    "border-gray-200"
+
+                  }
+
+                `}
 
               >
 
 
+                <p className="font-bold">
 
-                <input
+                  {address.label}
 
-                  type="radio"
-
-                  checked={
-                    selectedAddress?.id === address.id
-                  }
-
-                  onChange={() =>
-                    setSelectedAddress(address)
-                  }
-
-                />
+                </p>
 
 
-
-                <span className="ml-3">
-
-
-                  <b>
-
-                    {address.label}
-
-                  </b>
-
-
-                  <br />
+                <p>
 
                   {address.address_line}
 
+                </p>
 
-                  <br />
+
+                <p>
 
                   {address.city}
 
@@ -444,12 +551,10 @@ function Checkout({ cart, clearCart }) {
 
                   {address.postcode}
 
+                </p>
 
 
-                </span>
-
-
-              </label>
+              </div>
 
 
             ))
@@ -457,22 +562,6 @@ function Checkout({ cart, clearCart }) {
 
 
 
-
-          {
-            addresses.length === 0 && (
-
-              <p>
-
-                No saved addresses.
-                Add one in your profile.
-
-              </p>
-
-            )
-          }
-
-
-
         </div>
 
 
@@ -483,61 +572,142 @@ function Checkout({ cart, clearCart }) {
 
 
 
+        {/* DELIVERY DATE */}
+
+
         <div className="
           bg-white
-          rounded-xl
+          rounded-2xl
           shadow
           p-6
           mb-6
         ">
 
 
-
           <h2 className="
             text-xl
             font-bold
-            mb-4
+            mb-5
           ">
 
-            Delivery Time 🚚
+            📅 Choose delivery day
 
           </h2>
 
 
 
 
-          <select
+          <div className="
+            grid
+            grid-cols-2
+            sm:grid-cols-4
+            md:grid-cols-7
+            gap-3
+          ">
 
-            value={deliverySlot}
 
-            onChange={
-              e=>setDeliverySlot(e.target.value)
+            {
+              deliveryDates.map(date => (
+
+
+                <button
+
+
+                  key={date.toISOString()}
+
+
+                  onClick={() =>
+                    setSelectedDate(date)
+                  }
+
+
+
+                  className={`
+
+                    p-3
+
+                    rounded-xl
+
+                    border
+
+                    ${
+                      selectedDate?.toDateString()
+                      ===
+                      date.toDateString()
+
+                      ?
+
+                      "bg-orange-500 text-white"
+
+                      :
+
+                      "bg-white"
+
+                    }
+
+                  `}
+
+
+                >
+
+
+                  <div className="font-bold">
+
+
+                    {
+                      date.toLocaleDateString(
+
+                        "en-GB",
+
+                        {
+                          weekday:"short"
+                        }
+
+                      )
+
+                    }
+
+
+                  </div>
+
+
+
+                  <div>
+
+                    {date.getDate()}
+
+                  </div>
+
+
+
+                  <div className="text-xs">
+
+
+                    {
+                      date.toLocaleDateString(
+
+                        "en-GB",
+
+                        {
+                          month:"short"
+                        }
+
+                      )
+
+                    }
+
+
+                  </div>
+
+
+                </button>
+
+
+              ))
             }
 
-            className="
-              border
-              rounded
-              p-3
-              w-full
-            "
 
-          >
-
-            <option>
-              Today 18:00 - 20:00
-            </option>
-
-            <option>
-              Tomorrow 10:00 - 12:00
-            </option>
-
-            <option>
-              Tomorrow 14:00 - 16:00
-            </option>
-
-
-          </select>
-
+          </div>
 
 
         </div>
@@ -550,22 +720,122 @@ function Checkout({ cart, clearCart }) {
 
 
 
+        {/* TIME SLOT */}
+
+
         <div className="
           bg-white
-          rounded-xl
+          rounded-2xl
           shadow
           p-6
+          mb-6
         ">
-
 
 
           <h2 className="
             text-xl
             font-bold
-            mb-4
+            mb-5
           ">
 
-            Order Summary
+            ⏰ Delivery time
+
+          </h2>
+
+
+
+
+          <div className="
+            grid
+            md:grid-cols-3
+            gap-4
+          ">
+
+
+            {
+              slots.map(slot => (
+
+
+                <button
+
+
+                  key={slot}
+
+
+                  onClick={() =>
+                    setSelectedSlot(slot)
+                  }
+
+
+                  className={`
+
+                    border
+
+                    rounded-xl
+
+                    p-4
+
+                    font-semibold
+
+
+                    ${
+                      selectedSlot === slot
+
+                      ?
+
+                      "bg-orange-500 text-white"
+
+                      :
+
+                      "bg-white"
+
+                    }
+
+                  `}
+
+
+                >
+
+                  {slot}
+
+                </button>
+
+
+              ))
+            }
+
+
+          </div>
+
+
+        </div>
+
+
+
+
+
+
+
+
+
+        {/* ORDER SUMMARY */}
+
+
+        <div className="
+          bg-white
+          rounded-2xl
+          shadow
+          p-6
+        ">
+
+
+          <h2 className="
+            text-xl
+            font-bold
+            mb-5
+          ">
+
+            🛒 Order Summary
 
           </h2>
 
@@ -590,6 +860,7 @@ function Checkout({ cart, clearCart }) {
 
               >
 
+
                 <span>
 
                   {item.name}
@@ -602,19 +873,24 @@ function Checkout({ cart, clearCart }) {
 
 
 
-                <span>
+
+                <span className="font-bold">
 
                   £
+
                   {
+
                     (
+
                       item.price *
+
                       item.quantity
 
                     ).toFixed(2)
+
                   }
 
                 </span>
-
 
 
               </div>
@@ -629,14 +905,18 @@ function Checkout({ cart, clearCart }) {
 
 
           <div className="
+            mt-5
             text-xl
             font-bold
-            mt-5
           ">
+
 
             Total:
 
+            {" "}
+
             £{total.toFixed(2)}
+
 
           </div>
 
@@ -646,26 +926,78 @@ function Checkout({ cart, clearCart }) {
 
 
 
+          {
+            selectedDate && selectedSlot && (
+
+              <div className="
+                mt-5
+                bg-orange-50
+                rounded-xl
+                p-4
+              ">
+
+
+                <p>
+
+                  📅 Delivery:
+
+                  {" "}
+
+                  {
+                    selectedDate.toLocaleDateString()
+                  }
+
+                </p>
+
+
+                <p>
+
+                  ⏰ Slot:
+
+                  {" "}
+
+                  {selectedSlot}
+
+                </p>
+
+
+              </div>
+
+            )
+          }
+
+
+
+
+
+
+
           <button
+
 
             onClick={placeOrder}
 
+
             disabled={loading}
+
 
             className="
               mt-6
+              w-full
               bg-orange-500
               text-white
-              px-6
-              py-3
+              py-4
               rounded-full
               font-bold
-              w-full
+              text-lg
             "
+
 
           >
 
+
             {
+
               loading
 
               ?
@@ -689,6 +1021,7 @@ function Checkout({ cart, clearCart }) {
 
 
 
+
       </div>
 
 
@@ -696,6 +1029,7 @@ function Checkout({ cart, clearCart }) {
 
 
   );
+
 
 }
 
