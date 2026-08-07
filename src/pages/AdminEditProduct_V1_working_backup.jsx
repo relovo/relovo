@@ -5,20 +5,19 @@ import { supabase } from "../services/supabaseClient";
 
 function AdminEditProduct() {
 
+
   const { id } = useParams();
+
   const navigate = useNavigate();
 
 
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const [loading,setLoading] = useState(true);
 
-
-  const [stores, setStores] = useState([]);
-  const [categories, setCategories] = useState([]);
+  const [saving,setSaving] = useState(false);
 
 
 
-  const [product, setProduct] = useState({
+  const [product,setProduct] = useState({
 
     name:"",
     description:"",
@@ -27,9 +26,7 @@ function AdminEditProduct() {
     offer_price:"",
     brand:"",
     stock:0,
-    available:true,
-    store_id:"",
-    category_id:""
+    available:true
 
   });
 
@@ -39,7 +36,7 @@ function AdminEditProduct() {
 
   useEffect(()=>{
 
-    loadData();
+    loadProduct();
 
   },[]);
 
@@ -48,96 +45,42 @@ function AdminEditProduct() {
 
 
 
-  async function loadData(){
+
+
+  async function loadProduct(){
 
 
     setLoading(true);
 
 
 
-    const [
-      productResponse,
-      storesResponse,
-      categoriesResponse
-    ] = await Promise.all([
+    const {data,error}=await supabase
 
+      .from("Products")
 
-      supabase
+      .select("*")
 
-        .from("Products")
+      .eq("id",id)
 
-        .select("*")
-
-        .eq("id",id)
-
-        .single(),
-
-
-
-      supabase
-
-        .from("Stores")
-
-        .select("*")
-
-        .order("name"),
-
-
-
-
-      supabase
-
-        .from("Categories")
-
-        .select("*")
-
-        .order("name")
-
-    ]);
+      .single();
 
 
 
 
 
-    if(productResponse.error){
+    if(error){
 
-      alert(productResponse.error.message);
+      console.log(error);
+
+      alert(error.message);
+
+      setLoading(false);
 
       return;
 
     }
 
 
-
-
-
-    if(storesResponse.error){
-
-      alert(storesResponse.error.message);
-
-      return;
-
-    }
-
-
-
-
-
-    if(categoriesResponse.error){
-
-      alert(categoriesResponse.error.message);
-
-      return;
-
-    }
-
-
-
-
-
-
-
-    const data = productResponse.data;
 
 
 
@@ -157,20 +100,11 @@ function AdminEditProduct() {
 
       stock:data.stock || 0,
 
-      available:data.available ?? true,
-
-      store_id:data.store_id || "",
-
-      category_id:data.category_id || ""
+      available:data.available ?? true
 
     });
 
 
-
-
-    setStores(storesResponse.data || []);
-
-    setCategories(categoriesResponse.data || []);
 
     setLoading(false);
 
@@ -188,13 +122,7 @@ function AdminEditProduct() {
   function handleChange(e){
 
 
-    const {
-      name,
-      value,
-      type,
-      checked
-    } = e.target;
-
+    const {name,value,type,checked}=e.target;
 
 
     setProduct(prev=>({
@@ -222,7 +150,7 @@ function AdminEditProduct() {
 
 
 
-  async function saveProduct(){
+  async function updateProduct(){
 
 
     setSaving(true);
@@ -255,16 +183,11 @@ function AdminEditProduct() {
 
         stock:Number(product.stock),
 
-        available:product.available,
-
-        store_id:product.store_id || null,
-
-        category_id:product.category_id || null
+        available:product.available
 
       })
 
       .eq("id",id);
-
 
 
 
@@ -284,6 +207,7 @@ function AdminEditProduct() {
 
 
 
+
     alert("✅ Product updated");
 
 
@@ -299,11 +223,15 @@ function AdminEditProduct() {
 
 
 
+
   async function deleteProduct(){
 
 
+
     const confirmDelete = window.confirm(
+
       "Delete this product?"
+
     );
 
 
@@ -313,6 +241,7 @@ function AdminEditProduct() {
       return;
 
     }
+
 
 
 
@@ -329,6 +258,7 @@ function AdminEditProduct() {
 
 
 
+
     if(error){
 
       alert(error.message);
@@ -340,7 +270,9 @@ function AdminEditProduct() {
 
 
 
+
     alert("✅ Product deleted");
+
 
     navigate("/admin/products");
 
@@ -355,17 +287,20 @@ function AdminEditProduct() {
 
 
 
+
   if(loading){
+
 
     return (
 
       <div className="p-8">
 
-        Loading...
+        Loading product...
 
       </div>
 
     );
+
 
   }
 
@@ -376,12 +311,15 @@ function AdminEditProduct() {
 
 
 
+
+
   return (
+
 
     <div className="min-h-screen bg-gray-50 p-8">
 
 
-      <div className="max-w-3xl mx-auto bg-white shadow rounded-2xl p-8">
+      <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow p-8">
 
 
 
@@ -390,6 +328,7 @@ function AdminEditProduct() {
           ✏️ Edit Product
 
         </h1>
+
 
 
 
@@ -409,27 +348,9 @@ function AdminEditProduct() {
 
             onChange={handleChange}
 
-            className="w-full border p-3 rounded"
-
             placeholder="Product name"
 
-          />
-
-
-
-
-
-          <input
-
-            name="brand"
-
-            value={product.brand}
-
-            onChange={handleChange}
-
             className="w-full border p-3 rounded"
-
-            placeholder="Brand"
 
           />
 
@@ -446,11 +367,12 @@ function AdminEditProduct() {
 
             onChange={handleChange}
 
-            className="w-full border p-3 rounded"
-
             placeholder="Description"
 
+            className="w-full border p-3 rounded"
+
           />
+
 
 
 
@@ -465,9 +387,9 @@ function AdminEditProduct() {
 
             onChange={handleChange}
 
-            className="w-full border p-3 rounded"
-
             placeholder="Image URL"
+
+            className="w-full border p-3 rounded"
 
           />
 
@@ -477,84 +399,19 @@ function AdminEditProduct() {
 
 
 
-          <select
+          <input
 
-            name="store_id"
+            name="brand"
 
-            value={product.store_id}
-
-            onChange={handleChange}
-
-            className="w-full border p-3 rounded"
-
-          >
-
-            <option value="">
-              Select Store
-            </option>
-
-
-            {stores.map(store=>(
-
-              <option
-
-                key={store.id}
-
-                value={store.id}
-
-              >
-
-                {store.name}
-
-              </option>
-
-            ))}
-
-
-          </select>
-
-
-
-
-
-
-
-          <select
-
-            name="category_id"
-
-            value={product.category_id}
+            value={product.brand}
 
             onChange={handleChange}
 
+            placeholder="Brand"
+
             className="w-full border p-3 rounded"
 
-          >
-
-            <option value="">
-              Select Category
-            </option>
-
-
-            {categories.map(category=>(
-
-              <option
-
-                key={category.id}
-
-                value={category.id}
-
-              >
-
-                {category.name}
-
-              </option>
-
-            ))}
-
-
-          </select>
-
+          />
 
 
 
@@ -570,13 +427,14 @@ function AdminEditProduct() {
 
             onChange={handleChange}
 
+            placeholder="Price"
+
             type="number"
 
             className="w-full border p-3 rounded"
 
-            placeholder="Price"
-
           />
+
 
 
 
@@ -592,11 +450,11 @@ function AdminEditProduct() {
 
             onChange={handleChange}
 
+            placeholder="Offer price"
+
             type="number"
 
             className="w-full border p-3 rounded"
-
-            placeholder="Offer price"
 
           />
 
@@ -614,11 +472,11 @@ function AdminEditProduct() {
 
             onChange={handleChange}
 
+            placeholder="Stock"
+
             type="number"
 
             className="w-full border p-3 rounded"
-
-            placeholder="Stock"
 
           />
 
@@ -628,7 +486,7 @@ function AdminEditProduct() {
 
 
 
-          <label className="flex gap-2 items-center">
+          <label className="flex gap-3 items-center">
 
 
             <input
@@ -644,7 +502,7 @@ function AdminEditProduct() {
             />
 
 
-            🟢 Available
+            Available
 
 
           </label>
@@ -659,9 +517,13 @@ function AdminEditProduct() {
 
 
 
+
+
             <button
 
-              onClick={saveProduct}
+              onClick={updateProduct}
+
+              disabled={saving}
 
               style={{
 
@@ -679,9 +541,11 @@ function AdminEditProduct() {
 
             >
 
-              💾 {saving ? "Saving..." : "Save Product"}
+              {saving ? "Saving..." : "💾 Save Product"}
 
             </button>
+
+
 
 
 
@@ -729,7 +593,9 @@ function AdminEditProduct() {
 
                 padding:"12px 20px",
 
-                borderRadius:"10px"
+                borderRadius:"10px",
+
+                fontWeight:"bold"
 
               }}
 
@@ -738,6 +604,7 @@ function AdminEditProduct() {
               Cancel
 
             </button>
+
 
 
 
@@ -754,6 +621,7 @@ function AdminEditProduct() {
       </div>
 
 
+
     </div>
 
 
@@ -761,6 +629,7 @@ function AdminEditProduct() {
 
 
 }
+
 
 
 export default AdminEditProduct;
