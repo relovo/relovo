@@ -13,8 +13,11 @@ import Profile from "./pages/Profile";
 import Orders from "./pages/Orders";
 import Checkout from "./pages/Checkout";
 import Addresses from "./pages/Addresses";
+
 import Admin from "./pages/Admin";
 import AdminProducts from "./pages/AdminProducts";
+import AdminNewProduct from "./pages/AdminNewProduct";
+
 
 
 
@@ -97,7 +100,6 @@ function App() {
     });
 
 
-
   }
 
 
@@ -136,7 +138,6 @@ function App() {
   function updateQuantity(id, quantity){
 
 
-
     if(quantity <= 0){
 
 
@@ -144,8 +145,8 @@ function App() {
 
       return;
 
-
     }
+
 
 
 
@@ -208,7 +209,6 @@ function App() {
 
   return (
 
-
     <>
 
 
@@ -216,7 +216,7 @@ function App() {
 
         cartItems={cart.length}
 
-        openCart={()=>setCartOpen(true)}
+        openCart={() => setCartOpen(true)}
 
       />
 
@@ -229,7 +229,7 @@ function App() {
 
         open={cartOpen}
 
-        closeCart={()=>setCartOpen(false)}
+        closeCart={() => setCartOpen(false)}
 
         cart={cart}
 
@@ -248,6 +248,7 @@ function App() {
 
 
       <Routes>
+
 
 
 
@@ -280,6 +281,7 @@ function App() {
           element={<Login />}
 
         />
+
 
 
 
@@ -361,6 +363,12 @@ function App() {
 
 
 
+
+
+        {/* ADMIN */}
+
+
+
         <Route
 
           path="/admin"
@@ -387,8 +395,21 @@ function App() {
 
 
 
-      </Routes>
 
+
+        <Route
+
+          path="/admin/products/new"
+
+          element={<AdminNewProduct />}
+
+        />
+
+
+
+
+
+      </Routes>
 
 
     </>
