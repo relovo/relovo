@@ -1,40 +1,27 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "../services/supabaseClient";
 
 
-function AdminEditProduct() {
+function AdminProducts() {
 
-
-  const { id } = useParams();
 
   const navigate = useNavigate();
 
 
-
-  const [stores, setStores] = useState([]);
-
-  const [categories, setCategories] = useState([]);
+  const [products, setProducts] = useState([]);
 
   const [loading, setLoading] = useState(true);
 
 
 
 
-  const [form, setForm] = useState({
 
-    name:"",
-    description:"",
-    image:"",
-    price:"",
-    offer_price:"",
-    store_id:"",
-    category_id:"",
-    brand:"",
-    stock:0,
-    available:true
+  useEffect(() => {
 
-  });
+    loadProducts();
+
+  }, []);
 
 
 
@@ -42,37 +29,37 @@ function AdminEditProduct() {
 
 
 
+  async function loadProducts(){
 
-  useEffect(()=>{
 
-    loadProduct();
-
-    loadOptions();
-
-  },[]);
+    setLoading(true);
 
 
 
-
-
-
-
-
-
-
-  async function loadProduct(){
-
-
-
-    const {data,error}=await supabase
+    const { data, error } = await supabase
 
       .from("Products")
 
-      .select("*")
+      .select(`
 
-      .eq("id",id)
+        *,
 
-      .single();
+        Stores (
+
+          name
+
+        ),
+
+        Categories (
+
+          name
+
+        )
+
+      `)
+
+      .order("id", { ascending:false });
+
 
 
 
@@ -81,6 +68,10 @@ function AdminEditProduct() {
 
       console.log(error);
 
+      alert(error.message);
+
+      setLoading(false);
+
       return;
 
     }
@@ -88,31 +79,7 @@ function AdminEditProduct() {
 
 
 
-    setForm({
-
-      name:data.name || "",
-
-      description:data.description || "",
-
-      image:data.image || "",
-
-      price:data.price || "",
-
-      offer_price:data.offer_price || "",
-
-      store_id:data.store_id || "",
-
-      category_id:data.category_id || "",
-
-      brand:data.brand || "",
-
-      stock:data.stock || 0,
-
-      available:data.available
-
-    });
-
-
+    setProducts(data || []);
 
     setLoading(false);
 
@@ -127,148 +94,21 @@ function AdminEditProduct() {
 
 
 
-  async function loadOptions(){
+  async function deleteProduct(id){
 
 
 
-    const {data:storesData}=await supabase
+    const confirmDelete = window.confirm(
 
-      .from("Stores")
+      "Are you sure you want to delete this product?"
 
-      .select("*");
+    );
 
 
 
-    setStores(storesData || []);
-
-
-
-
-
-
-
-    const {data:categoriesData}=await supabase
-
-      .from("Categories")
-
-      .select("*");
-
-
-
-    setCategories(categoriesData || []);
-
-
-
-  }
-
-
-
-
-
-
-
-
-
-  function handleChange(e){
-
-
-    const {name,value,type,checked}=e.target;
-
-
-
-    setForm({
-
-      ...form,
-
-      [name]:
-
-      type==="checkbox"
-
-      ?
-
-      checked
-
-      :
-
-      value
-
-
-    });
-
-
-  }
-
-
-
-
-
-
-
-
-
-  async function updateProduct(e){
-
-
-    e.preventDefault();
-
-
-
-
-
-    const {error}=await supabase
-
-      .from("Products")
-
-      .update({
-
-        name:form.name,
-
-        description:form.description,
-
-        image:form.image,
-
-        price:Number(form.price),
-
-        offer_price:
-
-          form.offer_price
-
-          ?
-
-          Number(form.offer_price)
-
-          :
-
-          null,
-
-        store_id:form.store_id,
-
-        category_id:form.category_id,
-
-        brand:form.brand,
-
-        stock:Number(form.stock),
-
-        available:form.available
-
-
-      })
-
-      .eq("id",id);
-
-
-
-
-
-
-
-    if(error){
-
-
-      alert(error.message);
+    if(!confirmDelete){
 
       return;
-
 
     }
 
@@ -278,10 +118,34 @@ function AdminEditProduct() {
 
 
 
-    alert("✅ Product updated");
+    const { error } = await supabase
+
+      .from("Products")
+
+      .delete()
+
+      .eq("id", id);
 
 
-    navigate("/admin/products");
+
+
+
+
+    if(error){
+
+      alert(error.message);
+
+      return;
+
+    }
+
+
+
+
+    alert("✅ Product deleted");
+
+
+    loadProducts();
 
 
   }
@@ -301,7 +165,7 @@ function AdminEditProduct() {
 
       <div className="p-8">
 
-        Loading product...
+        Loading products...
 
       </div>
 
@@ -320,244 +184,229 @@ function AdminEditProduct() {
 
   return (
 
+
     <div className="min-h-screen bg-gray-50 p-8">
 
 
-      <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow p-8">
+      <div className="max-w-7xl mx-auto bg-white rounded-2xl shadow p-8">
 
 
-        <h1 className="text-3xl font-bold mb-6">
 
-          ✏️ Edit Product
 
-        </h1>
 
 
+        <div className="flex justify-between items-center mb-6">
 
 
+          <h1 className="text-3xl font-bold">
 
+            📦 Admin Products
 
-        <form
+          </h1>
 
-          onSubmit={updateProduct}
 
-          className="space-y-4"
 
-        >
 
 
+          <button
 
+            onClick={()=>navigate("/admin/products/new")}
 
+            style={{
 
-        <input
+              background:"#16a34a",
 
-          name="name"
+              color:"white",
 
-          value={form.name}
+              padding:"12px 20px",
 
-          onChange={handleChange}
+              borderRadius:"12px",
 
-          className="border p-3 rounded-xl w-full"
+              fontWeight:"bold",
 
-          placeholder="Product name"
+              cursor:"pointer"
 
-        />
+            }}
 
+          >
 
+            ➕ New Product
 
+          </button>
 
 
-        <input
+        </div>
 
-          name="brand"
 
-          value={form.brand}
 
-          onChange={handleChange}
 
-          className="border p-3 rounded-xl w-full"
 
-          placeholder="Brand"
 
-        />
 
 
 
+        <div className="overflow-x-auto">
 
 
+          <table className="w-full border-collapse">
 
-        <input
 
-          name="image"
+            <thead>
 
-          value={form.image}
 
-          onChange={handleChange}
+              <tr className="border-b">
 
-          className="border p-3 rounded-xl w-full"
 
-          placeholder="Image URL"
+                <th className="p-3 text-left">
 
-        />
+                  Image
 
+                </th>
 
 
+                <th className="p-3 text-left">
 
+                  Product
 
+                </th>
 
-        <textarea
 
-          name="description"
+                <th className="p-3 text-left">
 
-          value={form.description}
+                  Store
 
-          onChange={handleChange}
+                </th>
 
-          className="border p-3 rounded-xl w-full"
 
-          placeholder="Description"
+                <th className="p-3 text-left">
 
-        />
+                  Category
 
+                </th>
 
 
+                <th className="p-3 text-left">
 
+                  Price
 
+                </th>
 
-        <select
 
-          name="store_id"
+                <th className="p-3 text-left">
 
-          value={form.store_id}
+                  Stock
 
-          onChange={handleChange}
+                </th>
 
-          className="border p-3 rounded-xl w-full"
 
-        >
+                <th className="p-3 text-left">
 
-          {stores.map(store=>(
+                  Status
 
-            <option
+                </th>
 
-              key={store.id}
 
-              value={store.id}
+                <th className="p-3 text-left">
 
-            >
+                  Actions
 
-              {store.name}
+                </th>
 
-            </option>
 
-          ))}
+              </tr>
 
-        </select>
 
+            </thead>
 
 
 
 
 
-        <select
 
-          name="category_id"
 
-          value={form.category_id}
 
-          onChange={handleChange}
 
-          className="border p-3 rounded-xl w-full"
+            <tbody>
 
-        >
 
-          {categories.map(category=>(
+            {products.map(product => (
 
-            <option
 
-              key={category.id}
+              <tr
 
-              value={category.id}
+                key={product.id}
 
-            >
+                className="border-b"
 
-              {category.name}
+              >
 
-            </option>
 
-          ))}
 
 
-        </select>
 
 
+                <td className="p-3">
 
 
+                  {product.image &&
 
+                  <img
 
-        <input
+                    src={product.image}
 
-          name="price"
+                    alt={product.name}
 
-          type="number"
+                    className="w-16 h-16 object-cover rounded"
 
-          step="0.01"
+                  />
 
-          value={form.price}
+                  }
 
-          onChange={handleChange}
 
-          className="border p-3 rounded-xl w-full"
+                </td>
 
-          placeholder="Price"
 
-        />
 
 
 
 
 
 
+                <td className="p-3">
 
-        <input
 
-          name="offer_price"
+                  <b>
 
-          type="number"
+                    {product.name}
 
-          step="0.01"
+                  </b>
 
-          value={form.offer_price}
 
-          onChange={handleChange}
+                  <br/>
 
-          className="border p-3 rounded-xl w-full"
 
-          placeholder="Offer price"
+                  <span className="text-gray-500">
 
-        />
+                    {product.brand}
 
+                  </span>
 
 
+                </td>
 
 
 
 
-        <input
 
-          name="stock"
 
-          type="number"
 
-          value={form.stock}
 
-          onChange={handleChange}
+                <td className="p-3">
 
-          className="border p-3 rounded-xl w-full"
+                  {product.Stores?.name || "-"}
 
-          placeholder="Stock"
+                </td>
 
-        />
 
 
 
@@ -565,63 +414,195 @@ function AdminEditProduct() {
 
 
 
-        <label className="flex gap-2">
+                <td className="p-3">
 
-          <input
+                  {product.Categories?.name || "-"}
 
-            type="checkbox"
+                </td>
 
-            name="available"
 
-            checked={form.available}
 
-            onChange={handleChange}
 
-          />
 
-          Available
 
-        </label>
 
 
+                <td className="p-3">
 
 
+                  £{product.price}
 
 
+                  {product.offer_price &&
 
+                    <div className="text-green-600">
 
-        <button
+                      Offer £{product.offer_price}
 
-          type="submit"
+                    </div>
 
-          style={{
+                  }
 
-            background:"#2563eb",
 
-            color:"white",
+                </td>
 
-            padding:"12px 32px",
 
-            borderRadius:"12px",
 
-            fontWeight:"bold",
 
-            cursor:"pointer"
 
-          }}
 
-        >
 
-          💾 Update Product
 
-        </button>
+                <td className="p-3">
 
+                  {product.stock ?? 0}
 
+                </td>
 
 
 
 
-        </form>
+
+
+
+
+                <td className="p-3">
+
+
+                  {product.available ? (
+
+                    <span className="text-green-600 font-bold">
+
+                      🟢 Available
+
+                    </span>
+
+
+                  ) : (
+
+
+                    <span className="text-red-600 font-bold">
+
+                      🔴 Hidden
+
+                    </span>
+
+
+                  )}
+
+
+
+                </td>
+
+
+
+
+
+
+
+
+                <td className="p-3">
+
+
+                  <div className="flex gap-2">
+
+
+
+
+
+
+                    <button
+
+                      onClick={()=>navigate(
+
+                        `/admin/products/edit/${product.id}`
+
+                      )}
+
+                      style={{
+
+                        background:"#2563eb",
+
+                        color:"white",
+
+                        padding:"8px 14px",
+
+                        borderRadius:"8px",
+
+                        fontWeight:"bold",
+
+                        cursor:"pointer"
+
+                      }}
+
+                    >
+
+                      ✏️ Edit
+
+                    </button>
+
+
+
+
+
+
+
+                    <button
+
+                      onClick={()=>deleteProduct(product.id)}
+
+                      style={{
+
+                        background:"#dc2626",
+
+                        color:"white",
+
+                        padding:"8px 14px",
+
+                        borderRadius:"8px",
+
+                        fontWeight:"bold",
+
+                        cursor:"pointer"
+
+                      }}
+
+                    >
+
+                      🗑 Delete
+
+                    </button>
+
+
+
+
+
+
+
+                  </div>
+
+
+                </td>
+
+
+
+
+
+
+
+              </tr>
+
+
+            ))}
+
+
+            </tbody>
+
+
+          </table>
+
+
+        </div>
 
 
       </div>
@@ -636,5 +617,4 @@ function AdminEditProduct() {
 }
 
 
-
-export default AdminEditProduct;
+export default AdminProducts;
