@@ -12,14 +12,11 @@ function Admin() {
 
 
 
-
   useEffect(() => {
 
     loadOrders();
 
   }, []);
-
-
 
 
 
@@ -52,15 +49,11 @@ function Admin() {
 
 
 
-
-
     if(error){
 
       console.log(error);
 
       alert(error.message);
-
-      setLoading(false);
 
       return;
 
@@ -81,8 +74,81 @@ function Admin() {
 
 
 
+  async function updateStatus(id,status){
 
-  const totalRevenue = orders.reduce(
+
+    const {
+
+      error
+
+    } = await supabase
+
+      .from("orders")
+
+      .update({
+
+        status
+
+      })
+
+      .eq(
+
+        "id",
+
+        id
+
+      );
+
+
+
+
+    if(error){
+
+      console.log(error);
+
+      alert(error.message);
+
+      return;
+
+    }
+
+
+
+    setOrders(current =>
+
+      current.map(order =>
+
+
+        order.id === id
+
+        ?
+
+        {
+          ...order,
+          status
+        }
+
+        :
+
+        order
+
+
+      )
+
+    );
+
+
+  }
+
+
+
+
+
+
+
+
+
+  const revenue = orders.reduce(
 
     (sum,order)=>
 
@@ -95,13 +161,18 @@ function Admin() {
 
 
 
+  const pending = orders.filter(
+
+    order => order.status === "pending"
+
+  ).length;
 
 
-  const pendingOrders = orders.filter(
 
-    order =>
 
-    order.status?.toLowerCase() === "pending"
+  const delivered = orders.filter(
+
+    order => order.status === "delivered"
 
   ).length;
 
@@ -111,12 +182,10 @@ function Admin() {
 
 
 
+  function statusColor(status){
 
 
-  function statusStyle(status){
-
-
-    switch(status?.toLowerCase()){
+    switch(status){
 
 
       case "delivered":
@@ -124,17 +193,14 @@ function Admin() {
         return "bg-green-100 text-green-700";
 
 
-
       case "preparing":
 
         return "bg-blue-100 text-blue-700";
 
 
-
       case "out_for_delivery":
 
         return "bg-purple-100 text-purple-700";
-
 
 
       default:
@@ -156,21 +222,17 @@ function Admin() {
 
   if(loading){
 
-
     return (
 
       <div className="p-10 text-center">
 
-        Loading dashboard...
+        Loading Admin...
 
       </div>
 
     );
 
-
   }
-
-
 
 
 
@@ -188,11 +250,7 @@ function Admin() {
 
 
 
-        <h1 className="
-          text-4xl
-          font-bold
-          mb-8
-        ">
+        <h1 className="text-4xl font-bold mb-8">
 
           🛠 Relovo Admin Dashboard
 
@@ -204,32 +262,17 @@ function Admin() {
 
 
 
-
-
-        <div className="
-          grid
-          md:grid-cols-3
-          gap-6
-          mb-8
-        ">
+        <div className="grid md:grid-cols-4 gap-6 mb-8">
 
 
 
-
-
-          <div className="
-            bg-white
-            rounded-2xl
-            shadow
-            p-6
-          ">
+          <div className="bg-white rounded-2xl shadow p-6">
 
             <p className="text-gray-500">
 
-              📦 Total Orders
+              📦 Orders
 
             </p>
-
 
             <p className="text-3xl font-bold">
 
@@ -237,21 +280,13 @@ function Admin() {
 
             </p>
 
-
           </div>
 
 
 
 
 
-
-          <div className="
-            bg-white
-            rounded-2xl
-            shadow
-            p-6
-          ">
-
+          <div className="bg-white rounded-2xl shadow p-6">
 
             <p className="text-gray-500">
 
@@ -259,13 +294,11 @@ function Admin() {
 
             </p>
 
-
             <p className="text-3xl font-bold">
 
-              £{totalRevenue.toFixed(2)}
+              £{revenue.toFixed(2)}
 
             </p>
-
 
           </div>
 
@@ -273,32 +306,41 @@ function Admin() {
 
 
 
-
-          <div className="
-            bg-white
-            rounded-2xl
-            shadow
-            p-6
-          ">
-
+          <div className="bg-white rounded-2xl shadow p-6">
 
             <p className="text-gray-500">
 
-              ⏳ Pending Orders
+              🟡 Pending
 
             </p>
-
 
             <p className="text-3xl font-bold">
 
-              {pendingOrders}
+              {pending}
 
             </p>
-
 
           </div>
 
 
+
+
+
+          <div className="bg-white rounded-2xl shadow p-6">
+
+            <p className="text-gray-500">
+
+              🟢 Delivered
+
+            </p>
+
+            <p className="text-3xl font-bold">
+
+              {delivered}
+
+            </p>
+
+          </div>
 
 
 
@@ -312,22 +354,12 @@ function Admin() {
 
 
 
-        <div className="
-          bg-white
-          rounded-2xl
-          shadow
-          p-6
-        ">
+        <div className="bg-white rounded-2xl shadow p-6">
 
 
+          <h2 className="text-2xl font-bold mb-6">
 
-          <h2 className="
-            text-2xl
-            font-bold
-            mb-6
-          ">
-
-            📦 Orders
+            📦 Orders Management
 
           </h2>
 
@@ -336,27 +368,9 @@ function Admin() {
 
 
 
-
           {
-            orders.length === 0 ?
-
-
-            (
-
-              <p className="text-gray-500">
-
-                No orders found.
-
-              </p>
-
-            )
-
-
-            :
-
 
             orders.map(order => (
-
 
 
               <div
@@ -365,7 +379,7 @@ function Admin() {
 
                 className="
                   border-b
-                  py-5
+                  py-6
                 "
 
               >
@@ -377,18 +391,15 @@ function Admin() {
                   flex
                   justify-between
                   items-center
-                  mb-3
+                  mb-4
                 ">
 
 
-
-                  <h3 className="font-bold">
+                  <h3 className="font-bold text-lg">
 
                     Order #{order.id.slice(0,8)}
 
                   </h3>
-
-
 
 
 
@@ -398,19 +409,15 @@ function Admin() {
                     rounded-full
                     text-sm
                     font-bold
-                    ${statusStyle(order.status)}
+                    ${statusColor(order.status)}
                   `}>
 
-
                     {order.status}
-
 
                   </span>
 
 
-
                 </div>
-
 
 
 
@@ -425,8 +432,6 @@ function Admin() {
 
 
 
-
-
                 <p>
 
                   📅 {order.delivery_date}
@@ -435,15 +440,11 @@ function Admin() {
 
 
 
-
-
                 <p>
 
                   ⏰ {order.delivery_slot}
 
                 </p>
-
-
 
 
 
@@ -457,11 +458,134 @@ function Admin() {
 
 
 
+
+
+                <div className="
+                  flex
+                  gap-2
+                  flex-wrap
+                  mt-5
+                ">
+
+
+                  <button
+
+                    onClick={() =>
+                      updateStatus(
+                        order.id,
+                        "pending"
+                      )
+                    }
+
+                    className="
+                      bg-yellow-500
+                      text-white
+                      px-4
+                      py-2
+                      rounded-full
+                    "
+
+                  >
+
+                    Pending
+
+                  </button>
+
+
+
+
+
+                  <button
+
+                    onClick={() =>
+                      updateStatus(
+                        order.id,
+                        "preparing"
+                      )
+                    }
+
+                    className="
+                      bg-blue-500
+                      text-white
+                      px-4
+                      py-2
+                      rounded-full
+                    "
+
+                  >
+
+                    Preparing
+
+                  </button>
+
+
+
+
+
+                  <button
+
+                    onClick={() =>
+                      updateStatus(
+                        order.id,
+                        "out_for_delivery"
+                      )
+                    }
+
+                    className="
+                      bg-purple-500
+                      text-white
+                      px-4
+                      py-2
+                      rounded-full
+                    "
+
+                  >
+
+                    Out for delivery
+
+                  </button>
+
+
+
+
+
+                  <button
+
+                    onClick={() =>
+                      updateStatus(
+                        order.id,
+                        "delivered"
+                      )
+                    }
+
+                    className="
+                      bg-green-500
+                      text-white
+                      px-4
+                      py-2
+                      rounded-full
+                    "
+
+                  >
+
+                    Delivered
+
+                  </button>
+
+
+
+
+                </div>
+
+
+
+
+
+
               </div>
 
 
             ))
-
 
           }
 
@@ -473,10 +597,7 @@ function Admin() {
 
 
 
-
-
       </div>
-
 
 
     </div>
