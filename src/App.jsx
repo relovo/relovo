@@ -14,8 +14,7 @@ import Orders from "./pages/Orders";
 import Checkout from "./pages/Checkout";
 import Addresses from "./pages/Addresses";
 import Admin from "./pages/Admin";
-import Products from "./pages/Products";
-
+import AdminProducts from "./pages/AdminProducts";
 
 
 
@@ -26,7 +25,6 @@ function App() {
   const [cart, setCart] = useState([]);
 
   const [cartOpen, setCartOpen] = useState(false);
-
 
 
 
@@ -44,7 +42,6 @@ function App() {
         item => item.id === product.id
 
       );
-
 
 
 
@@ -134,14 +131,19 @@ function App() {
 
 
 
+
+
   function updateQuantity(id, quantity){
+
 
 
     if(quantity <= 0){
 
+
       removeFromCart(id);
 
       return;
+
 
     }
 
@@ -174,6 +176,7 @@ function App() {
 
       )
 
+
     );
 
 
@@ -189,7 +192,9 @@ function App() {
 
   function clearCart(){
 
+
     setCart([]);
+
 
   }
 
@@ -211,7 +216,7 @@ function App() {
 
         cartItems={cart.length}
 
-        openCart={() => setCartOpen(true)}
+        openCart={()=>setCartOpen(true)}
 
       />
 
@@ -220,13 +225,11 @@ function App() {
 
 
 
-
       <Cart
-
 
         open={cartOpen}
 
-        closeCart={() => setCartOpen(false)}
+        closeCart={()=>setCartOpen(false)}
 
         cart={cart}
 
@@ -245,7 +248,6 @@ function App() {
 
 
       <Routes>
-
 
 
 
@@ -271,7 +273,6 @@ function App() {
 
 
 
-
         <Route
 
           path="/login"
@@ -284,8 +285,6 @@ function App() {
 
 
 
-
-
         <Route
 
           path="/register"
@@ -293,7 +292,6 @@ function App() {
           element={<Register />}
 
         />
-
 
 
 
@@ -313,7 +311,6 @@ function App() {
 
 
 
-
         <Route
 
           path="/orders"
@@ -321,7 +318,6 @@ function App() {
           element={<Orders />}
 
         />
-
 
 
 
@@ -345,7 +341,6 @@ function App() {
           }
 
         />
-
 
 
 
@@ -382,13 +377,11 @@ function App() {
 
         <Route
 
-          path="/products"
+          path="/admin/products"
 
-          element={<Products />}
+          element={<AdminProducts />}
 
         />
-
-
 
 
 
