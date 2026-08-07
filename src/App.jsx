@@ -14,9 +14,11 @@ import Orders from "./pages/Orders";
 import Checkout from "./pages/Checkout";
 import Addresses from "./pages/Addresses";
 
+
 import Admin from "./pages/Admin";
 import AdminProducts from "./pages/AdminProducts";
 import AdminNewProduct from "./pages/AdminNewProduct";
+import AdminEditProduct from "./pages/AdminEditProduct";
 
 
 
@@ -34,10 +36,11 @@ function App() {
 
 
 
+
   function addToCart(product) {
 
 
-    setCart((currentCart) => {
+    setCart(currentCart => {
 
 
       const existing = currentCart.find(
@@ -96,7 +99,6 @@ function App() {
       ];
 
 
-
     });
 
 
@@ -115,17 +117,18 @@ function App() {
 
     setCart(currentCart =>
 
+
       currentCart.filter(
 
         item => item.id !== id
 
       )
 
+
     );
 
 
   }
-
 
 
 
@@ -145,8 +148,8 @@ function App() {
 
       return;
 
-    }
 
+    }
 
 
 
@@ -190,7 +193,6 @@ function App() {
 
 
 
-
   function clearCart(){
 
 
@@ -216,9 +218,10 @@ function App() {
 
         cartItems={cart.length}
 
-        openCart={() => setCartOpen(true)}
+        openCart={()=>setCartOpen(true)}
 
       />
+
 
 
 
@@ -229,7 +232,7 @@ function App() {
 
         open={cartOpen}
 
-        closeCart={() => setCartOpen(false)}
+        closeCart={()=>setCartOpen(false)}
 
         cart={cart}
 
@@ -268,6 +271,7 @@ function App() {
           }
 
         />
+
 
 
 
@@ -326,6 +330,7 @@ function App() {
 
 
 
+
         <Route
 
           path="/checkout"
@@ -343,6 +348,7 @@ function App() {
           }
 
         />
+
 
 
 
@@ -402,6 +408,20 @@ function App() {
           path="/admin/products/new"
 
           element={<AdminNewProduct />}
+
+        />
+
+
+
+
+
+
+
+        <Route
+
+          path="/admin/products/edit/:id"
+
+          element={<AdminEditProduct />}
 
         />
 
