@@ -1,256 +1,35 @@
-import { useEffect, useState } from "react";
-import { supabase } from "../services/supabaseClient";
+import { useNavigate } from "react-router-dom";
 
 
 function Admin() {
 
 
-  const [orders, setOrders] = useState([]);
-
-  const [loading, setLoading] = useState(true);
-
-
-
-
-  useEffect(() => {
-
-    loadOrders();
-
-  }, []);
-
-
-
-
-
-  async function loadOrders() {
-
-
-    const {
-
-      data,
-
-      error
-
-    } = await supabase
-
-      .from("orders")
-
-      .select("*")
-
-      .order(
-
-        "created_at",
-
-        {
-          ascending:false
-        }
-
-      );
-
-
-
-    if(error){
-
-      console.log(error);
-
-      alert(error.message);
-
-      return;
-
-    }
-
-
-
-    setOrders(data || []);
-
-    setLoading(false);
-
-
-  }
-
-
-
-
-
-
-
-  async function updateStatus(id,status){
-
-
-    const {
-
-      error
-
-    } = await supabase
-
-      .from("orders")
-
-      .update({
-
-        status
-
-      })
-
-      .eq(
-
-        "id",
-
-        id
-
-      );
-
-
-
-
-    if(error){
-
-      console.log(error);
-
-      alert(error.message);
-
-      return;
-
-    }
-
-
-
-    setOrders(current =>
-
-      current.map(order =>
-
-
-        order.id === id
-
-        ?
-
-        {
-          ...order,
-          status
-        }
-
-        :
-
-        order
-
-
-      )
-
-    );
-
-
-  }
-
-
-
-
-
-
-
-
-
-  const revenue = orders.reduce(
-
-    (sum,order)=>
-
-      sum + Number(order.total || 0),
-
-    0
-
-  );
-
-
-
-
-  const pending = orders.filter(
-
-    order => order.status === "pending"
-
-  ).length;
-
-
-
-
-  const delivered = orders.filter(
-
-    order => order.status === "delivered"
-
-  ).length;
-
-
-
-
-
-
-
-  function statusColor(status){
-
-
-    switch(status){
-
-
-      case "delivered":
-
-        return "bg-green-100 text-green-700";
-
-
-      case "preparing":
-
-        return "bg-blue-100 text-blue-700";
-
-
-      case "out_for_delivery":
-
-        return "bg-purple-100 text-purple-700";
-
-
-      default:
-
-        return "bg-yellow-100 text-yellow-700";
-
-
-    }
-
-
-  }
-
-
-
-
-
-
-
-
-  if(loading){
-
-    return (
-
-      <div className="p-10 text-center">
-
-        Loading Admin...
-
-      </div>
-
-    );
-
-  }
-
-
-
+  const navigate = useNavigate();
 
 
 
 
   return (
 
+    <div className="
+      min-h-screen
+      bg-gray-50
+      p-8
+    ">
 
-    <div className="min-h-screen bg-gray-50 p-8">
+
+      <div className="
+        max-w-7xl
+        mx-auto
+      ">
 
 
-      <div className="max-w-7xl mx-auto">
 
-
-
-        <h1 className="text-4xl font-bold mb-8">
+        <h1 className="
+          text-4xl
+          font-bold
+          mb-8
+        ">
 
           🛠 Relovo Admin Dashboard
 
@@ -262,41 +41,31 @@ function Admin() {
 
 
 
-        <div className="grid md:grid-cols-4 gap-6 mb-8">
+        <div className="
+          grid
+          md:grid-cols-4
+          gap-6
+          mb-8
+        ">
 
 
 
-          <div className="bg-white rounded-2xl shadow p-6">
+          <div className="
+            bg-white
+            rounded-2xl
+            shadow
+            p-6
+          ">
 
-            <p className="text-gray-500">
+            <h2 className="text-gray-500">
 
-              📦 Orders
+              Orders Today
 
-            </p>
+            </h2>
 
-            <p className="text-3xl font-bold">
+            <p className="text-3xl font-bold mt-2">
 
-              {orders.length}
-
-            </p>
-
-          </div>
-
-
-
-
-
-          <div className="bg-white rounded-2xl shadow p-6">
-
-            <p className="text-gray-500">
-
-              💷 Revenue
-
-            </p>
-
-            <p className="text-3xl font-bold">
-
-              £{revenue.toFixed(2)}
+              0
 
             </p>
 
@@ -306,17 +75,24 @@ function Admin() {
 
 
 
-          <div className="bg-white rounded-2xl shadow p-6">
 
-            <p className="text-gray-500">
 
-              🟡 Pending
+          <div className="
+            bg-white
+            rounded-2xl
+            shadow
+            p-6
+          ">
 
-            </p>
+            <h2 className="text-gray-500">
 
-            <p className="text-3xl font-bold">
+              Revenue
 
-              {pending}
+            </h2>
+
+            <p className="text-3xl font-bold mt-2">
+
+              £0.00
 
             </p>
 
@@ -326,17 +102,52 @@ function Admin() {
 
 
 
-          <div className="bg-white rounded-2xl shadow p-6">
 
-            <p className="text-gray-500">
 
-              🟢 Delivered
+
+          <div className="
+            bg-white
+            rounded-2xl
+            shadow
+            p-6
+          ">
+
+            <h2 className="text-gray-500">
+
+              Pending
+
+            </h2>
+
+            <p className="text-3xl font-bold mt-2">
+
+              0
 
             </p>
 
-            <p className="text-3xl font-bold">
+          </div>
 
-              {delivered}
+
+
+
+
+
+
+          <div className="
+            bg-white
+            rounded-2xl
+            shadow
+            p-6
+          ">
+
+            <h2 className="text-gray-500">
+
+              Drivers Active
+
+            </h2>
+
+            <p className="text-3xl font-bold mt-2">
+
+              0
 
             </p>
 
@@ -354,246 +165,181 @@ function Admin() {
 
 
 
-        <div className="bg-white rounded-2xl shadow p-6">
+        <div className="
+          grid
+          md:grid-cols-3
+          gap-6
+          mb-8
+        ">
 
 
-          <h2 className="text-2xl font-bold mb-6">
 
-            📦 Orders Management
+
+
+          <button
+
+            onClick={() => navigate("/orders")}
+
+            className="
+              bg-white
+              rounded-2xl
+              shadow
+              p-8
+              text-left
+              hover:shadow-lg
+            "
+
+          >
+
+            <h2 className="
+              text-2xl
+              font-bold
+            ">
+
+              📦 Orders
+
+            </h2>
+
+
+            <p className="text-gray-500 mt-2">
+
+              Manage customer orders
+
+            </p>
+
+
+          </button>
+
+
+
+
+
+
+
+
+
+          <button
+
+            onClick={() => navigate("/products")}
+
+            className="
+              bg-white
+              rounded-2xl
+              shadow
+              p-8
+              text-left
+              hover:shadow-lg
+            "
+
+          >
+
+            <h2 className="
+              text-2xl
+              font-bold
+            ">
+
+              🛒 Products
+
+            </h2>
+
+
+            <p className="text-gray-500 mt-2">
+
+              Add and manage products
+
+            </p>
+
+
+          </button>
+
+
+
+
+
+
+
+
+
+          <button
+
+            className="
+              bg-white
+              rounded-2xl
+              shadow
+              p-8
+              text-left
+              hover:shadow-lg
+            "
+
+          >
+
+            <h2 className="
+              text-2xl
+              font-bold
+            ">
+
+              🏪 Stores
+
+            </h2>
+
+
+            <p className="text-gray-500 mt-2">
+
+              Manage supermarkets
+
+            </p>
+
+
+          </button>
+
+
+
+
+
+
+        </div>
+
+
+
+
+
+
+
+
+
+        <div className="
+          bg-white
+          rounded-2xl
+          shadow
+          p-8
+        ">
+
+
+
+          <h2 className="
+            text-2xl
+            font-bold
+            mb-4
+          ">
+
+            📊 System Overview
 
           </h2>
 
 
 
+          <p className="text-gray-500">
 
+            Relovo marketplace management system.
 
-
-          {
-
-            orders.map(order => (
-
-
-              <div
-
-                key={order.id}
-
-                className="
-                  border-b
-                  py-6
-                "
-
-              >
-
-
-
-
-                <div className="
-                  flex
-                  justify-between
-                  items-center
-                  mb-4
-                ">
-
-
-                  <h3 className="font-bold text-lg">
-
-                    Order #{order.id.slice(0,8)}
-
-                  </h3>
-
-
-
-                  <span className={`
-                    px-3
-                    py-1
-                    rounded-full
-                    text-sm
-                    font-bold
-                    ${statusColor(order.status)}
-                  `}>
-
-                    {order.status}
-
-                  </span>
-
-
-                </div>
-
-
-
-
-
-
-                <p>
-
-                  📍 {order.customer_address}
-
-                </p>
-
-
-
-                <p>
-
-                  📅 {order.delivery_date}
-
-                </p>
-
-
-
-                <p>
-
-                  ⏰ {order.delivery_slot}
-
-                </p>
-
-
-
-                <p className="font-bold mt-2">
-
-                  💷 £{Number(order.total).toFixed(2)}
-
-                </p>
-
-
-
-
-
-
-
-                <div className="
-                  flex
-                  gap-2
-                  flex-wrap
-                  mt-5
-                ">
-
-
-                  <button
-
-                    onClick={() =>
-                      updateStatus(
-                        order.id,
-                        "pending"
-                      )
-                    }
-
-                    className="
-                      bg-yellow-500
-                      text-white
-                      px-4
-                      py-2
-                      rounded-full
-                    "
-
-                  >
-
-                    Pending
-
-                  </button>
-
-
-
-
-
-                  <button
-
-                    onClick={() =>
-                      updateStatus(
-                        order.id,
-                        "preparing"
-                      )
-                    }
-
-                    className="
-                      bg-blue-500
-                      text-white
-                      px-4
-                      py-2
-                      rounded-full
-                    "
-
-                  >
-
-                    Preparing
-
-                  </button>
-
-
-
-
-
-                  <button
-
-                    onClick={() =>
-                      updateStatus(
-                        order.id,
-                        "out_for_delivery"
-                      )
-                    }
-
-                    className="
-                      bg-purple-500
-                      text-white
-                      px-4
-                      py-2
-                      rounded-full
-                    "
-
-                  >
-
-                    Out for delivery
-
-                  </button>
-
-
-
-
-
-                  <button
-
-                    onClick={() =>
-                      updateStatus(
-                        order.id,
-                        "delivered"
-                      )
-                    }
-
-                    className="
-                      bg-green-500
-                      text-white
-                      px-4
-                      py-2
-                      rounded-full
-                    "
-
-                  >
-
-                    Delivered
-
-                  </button>
-
-
-
-
-                </div>
-
-
-
-
-
-
-              </div>
-
-
-            ))
-
-          }
-
-
+          </p>
 
 
 
         </div>
+
+
+
 
 
 
