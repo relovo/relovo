@@ -13,6 +13,7 @@ import Checkout from "./pages/Checkout";
 import Addresses from "./pages/Addresses";
 
 import Admin from "./pages/Admin";
+import AdminOrders from "./pages/AdminOrders";
 import AdminProducts from "./pages/AdminProducts";
 import AdminNewProduct from "./pages/AdminNewProduct";
 import AdminEditProduct from "./pages/AdminEditProduct";
@@ -107,6 +108,7 @@ function App() {
     setCart(currentCart =>
 
       currentCart
+
         .map(item =>
 
           item.id === id
@@ -119,6 +121,7 @@ function App() {
             : item
 
         )
+
         .filter(item => item.quantity > 0)
 
     );
@@ -208,7 +211,9 @@ function App() {
       {/* CART */}
 
       <Cart
+
         open={cartOpen}
+
         closeCart={() => setCartOpen(false)}
 
         cart={cart}
@@ -220,6 +225,7 @@ function App() {
         decreaseQuantity={decreaseQuantity}
 
         updateQuantity={updateQuantity}
+
       />
 
 
@@ -228,7 +234,10 @@ function App() {
       <Routes>
 
 
+        {/* ----------------------------------------- */}
         {/* CUSTOMER */}
+        {/* ----------------------------------------- */}
+
 
         <Route
           path="/"
@@ -292,6 +301,16 @@ function App() {
         />
 
 
+        {/* ADMIN ORDERS */}
+
+        <Route
+          path="/admin/orders"
+          element={<AdminOrders />}
+        />
+
+
+        {/* ADMIN PRODUCTS */}
+
         <Route
           path="/admin/products"
           element={<AdminProducts />}
@@ -310,7 +329,7 @@ function App() {
         />
 
 
-        {/* DELIVERY SLOTS */}
+        {/* ADMIN DELIVERY SLOTS */}
 
         <Route
           path="/admin/delivery-slots"
